@@ -2,3 +2,5 @@ models/*.ods
 models/*.xml
 models/*.backup
 __pycache__
+csysWRO.user/csysWROPORIS.py
+csysWRO.user/PORIS.py
