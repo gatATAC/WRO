@@ -285,837 +285,559 @@ class csysWROPORIS:
 
 		sysMision.id = identcounter
 		identcounter += 1
-		sysMision.ident = "Mision"
-		sysMision.description = ""
 
 		mdMisionMode_UNKNOWN.id = identcounter
 		identcounter += 1
-		mdMisionMode_UNKNOWN.ident = "MisionMode_UNKNOWN";
-		mdMisionMode_UNKNOWN.description = "";
 		sysMision.addMode(mdMisionMode_UNKNOWN);
 
 		mdMisionMode_Normal.id = identcounter
 		identcounter += 1
-		mdMisionMode_Normal.ident = "MisionMode_Normal"
-		mdMisionMode_Normal.description = ""
 		sysMision.addMode(mdMisionMode_Normal)
 
 		sysTramo.id = identcounter
 		identcounter += 1
-		sysTramo.ident = "Tramo"
-		sysTramo.description = ""
 		sysMision.addSubsystem(sysTramo);
 
 		mdTramoMode_UNKNOWN.id = identcounter
 		identcounter += 1
-		mdTramoMode_UNKNOWN.ident = "TramoMode_UNKNOWN";
-		mdTramoMode_UNKNOWN.description = "";
 		sysTramo.addMode(mdTramoMode_UNKNOWN);
 
 		mdTramoMode_P00_SituarBNB_finBNB_Avanzar.id = identcounter
 		identcounter += 1
-		mdTramoMode_P00_SituarBNB_finBNB_Avanzar.ident = "TramoMode_P00_SituarBNB_finBNB_Avanzar"
-		mdTramoMode_P00_SituarBNB_finBNB_Avanzar.description = ""
 		sysTramo.addMode(mdTramoMode_P00_SituarBNB_finBNB_Avanzar)
 
 		mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.id = identcounter
 		identcounter += 1
-		mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.ident = "TramoMode_P01_SeguirBNB_finder_giroder_abrir"
-		mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.description = ""
 		sysTramo.addMode(mdTramoMode_P01_SeguirBNB_finder_giroder_abrir)
 
 		mdTramoMode_P02_SeguirBNB_finder_giroder.id = identcounter
 		identcounter += 1
-		mdTramoMode_P02_SeguirBNB_finder_giroder.ident = "TramoMode_P02_SeguirBNB_finder_giroder"
-		mdTramoMode_P02_SeguirBNB_finder_giroder.description = ""
 		sysTramo.addMode(mdTramoMode_P02_SeguirBNB_finder_giroder)
 
 		mdTramoMode_P03_SeguirBNB_finizq_giroizq.id = identcounter
 		identcounter += 1
-		mdTramoMode_P03_SeguirBNB_finizq_giroizq.ident = "TramoMode_P03_SeguirBNB_finizq_giroizq"
-		mdTramoMode_P03_SeguirBNB_finizq_giroizq.description = ""
 		sysTramo.addMode(mdTramoMode_P03_SeguirBNB_finizq_giroizq)
 
 		mdTramoMode_P04_SeguirBNB_fincruce_rect.id = identcounter
 		identcounter += 1
-		mdTramoMode_P04_SeguirBNB_fincruce_rect.ident = "TramoMode_P04_SeguirBNB_fincruce_rect"
-		mdTramoMode_P04_SeguirBNB_fincruce_rect.description = ""
 		sysTramo.addMode(mdTramoMode_P04_SeguirBNB_fincruce_rect)
 
 		mdTramoMode_P05_SeguirNNB_finBNB_rect.id = identcounter
 		identcounter += 1
-		mdTramoMode_P05_SeguirNNB_finBNB_rect.ident = "TramoMode_P05_SeguirNNB_finBNB_rect"
-		mdTramoMode_P05_SeguirNNB_finBNB_rect.description = ""
 		sysTramo.addMode(mdTramoMode_P05_SeguirNNB_finBNB_rect)
 
 		mdTramoMode_P06_SeguirBNB_finizq_giroder.id = identcounter
 		identcounter += 1
-		mdTramoMode_P06_SeguirBNB_finizq_giroder.ident = "TramoMode_P06_SeguirBNB_finizq_giroder"
-		mdTramoMode_P06_SeguirBNB_finizq_giroder.description = ""
 		sysTramo.addMode(mdTramoMode_P06_SeguirBNB_finizq_giroder)
 
 		mdTramoMode_P07_SituarVVB_finVVB_Avanzar.id = identcounter
 		identcounter += 1
-		mdTramoMode_P07_SituarVVB_finVVB_Avanzar.ident = "TramoMode_P07_SituarVVB_finVVB_Avanzar"
-		mdTramoMode_P07_SituarVVB_finVVB_Avanzar.description = ""
 		sysTramo.addMode(mdTramoMode_P07_SituarVVB_finVVB_Avanzar)
 
 		mdTramoMode_P08_SeguirVVB_finVVV_giroder.id = identcounter
 		identcounter += 1
-		mdTramoMode_P08_SeguirVVB_finVVV_giroder.ident = "TramoMode_P08_SeguirVVB_finVVV_giroder"
-		mdTramoMode_P08_SeguirVVB_finVVV_giroder.description = ""
 		sysTramo.addMode(mdTramoMode_P08_SeguirVVB_finVVV_giroder)
 
 		sysSituacion.id = identcounter
 		identcounter += 1
-		sysSituacion.ident = "Situacion"
-		sysSituacion.description = ""
 		sysTramo.addSubsystem(sysSituacion);
 
 		mdSituacionMode_UNKNOWN.id = identcounter
 		identcounter += 1
-		mdSituacionMode_UNKNOWN.ident = "SituacionMode_UNKNOWN";
-		mdSituacionMode_UNKNOWN.description = "";
 		sysSituacion.addMode(mdSituacionMode_UNKNOWN);
 
 		mdSituacionMode_BNN_00.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNN_00.ident = "SituacionMode_BNN_00"
-		mdSituacionMode_BNN_00.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNN_00)
 
 		mdSituacionMode_NBB_00.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBB_00.ident = "SituacionMode_NBB_00"
-		mdSituacionMode_NBB_00.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBB_00)
 
 		mdSituacionMode_BBB_00.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBB_00.ident = "SituacionMode_BBB_00"
-		mdSituacionMode_BBB_00.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBB_00)
 
 		mdSituacionMode_NNB_00.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNB_00.ident = "SituacionMode_NNB_00"
-		mdSituacionMode_NNB_00.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNB_00)
 
 		mdSituacionMode_BNB_00.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNB_00.ident = "SituacionMode_BNB_00"
-		mdSituacionMode_BNB_00.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNB_00)
 
 		mdSituacionMode_NBN_00.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBN_00.ident = "SituacionMode_NBN_00"
-		mdSituacionMode_NBN_00.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBN_00)
 
 		mdSituacionMode_BBN_00.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBN_00.ident = "SituacionMode_BBN_00"
-		mdSituacionMode_BBN_00.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBN_00)
 
 		mdSituacionMode_NNN_00.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNN_00.ident = "SituacionMode_NNN_00"
-		mdSituacionMode_NNN_00.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNN_00)
 
 		mdSituacionMode_NBV_01.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBV_01.ident = "SituacionMode_NBV_01"
-		mdSituacionMode_NBV_01.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBV_01)
 
 		mdSituacionMode_BNB_01.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNB_01.ident = "SituacionMode_BNB_01"
-		mdSituacionMode_BNB_01.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNB_01)
 
 		mdSituacionMode_BBB_01.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBB_01.ident = "SituacionMode_BBB_01"
-		mdSituacionMode_BBB_01.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBB_01)
 
 		mdSituacionMode_BNN_01.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNN_01.ident = "SituacionMode_BNN_01"
-		mdSituacionMode_BNN_01.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNN_01)
 
 		mdSituacionMode_NBB_01.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBB_01.ident = "SituacionMode_NBB_01"
-		mdSituacionMode_NBB_01.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBB_01)
 
 		mdSituacionMode_NNB_01.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNB_01.ident = "SituacionMode_NNB_01"
-		mdSituacionMode_NNB_01.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNB_01)
 
 		mdSituacionMode_VBN_01.id = identcounter
 		identcounter += 1
-		mdSituacionMode_VBN_01.ident = "SituacionMode_VBN_01"
-		mdSituacionMode_VBN_01.description = ""
 		sysSituacion.addMode(mdSituacionMode_VBN_01)
 
 		mdSituacionMode_BBN_01.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBN_01.ident = "SituacionMode_BBN_01"
-		mdSituacionMode_BBN_01.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBN_01)
 
 		mdSituacionMode_NNN_01.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNN_01.ident = "SituacionMode_NNN_01"
-		mdSituacionMode_NNN_01.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNN_01)
 
 		mdSituacionMode_NBN_01.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBN_01.ident = "SituacionMode_NBN_01"
-		mdSituacionMode_NBN_01.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBN_01)
 
 		mdSituacionMode_BBB_02.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBB_02.ident = "SituacionMode_BBB_02"
-		mdSituacionMode_BBB_02.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBB_02)
 
 		mdSituacionMode_BBN_02.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBN_02.ident = "SituacionMode_BBN_02"
-		mdSituacionMode_BBN_02.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBN_02)
 
 		mdSituacionMode_BNB_02.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNB_02.ident = "SituacionMode_BNB_02"
-		mdSituacionMode_BNB_02.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNB_02)
 
 		mdSituacionMode_BNN_02.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNN_02.ident = "SituacionMode_BNN_02"
-		mdSituacionMode_BNN_02.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNN_02)
 
 		mdSituacionMode_NBB_02.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBB_02.ident = "SituacionMode_NBB_02"
-		mdSituacionMode_NBB_02.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBB_02)
 
 		mdSituacionMode_NBN_02.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBN_02.ident = "SituacionMode_NBN_02"
-		mdSituacionMode_NBN_02.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBN_02)
 
 		mdSituacionMode_NBV_02.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBV_02.ident = "SituacionMode_NBV_02"
-		mdSituacionMode_NBV_02.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBV_02)
 
 		mdSituacionMode_NNB_02.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNB_02.ident = "SituacionMode_NNB_02"
-		mdSituacionMode_NNB_02.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNB_02)
 
 		mdSituacionMode_NNN_02.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNN_02.ident = "SituacionMode_NNN_02"
-		mdSituacionMode_NNN_02.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNN_02)
 
 		mdSituacionMode_VBN_02.id = identcounter
 		identcounter += 1
-		mdSituacionMode_VBN_02.ident = "SituacionMode_VBN_02"
-		mdSituacionMode_VBN_02.description = ""
 		sysSituacion.addMode(mdSituacionMode_VBN_02)
 
 		mdSituacionMode_BBB_03.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBB_03.ident = "SituacionMode_BBB_03"
-		mdSituacionMode_BBB_03.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBB_03)
 
 		mdSituacionMode_BBN_03.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBN_03.ident = "SituacionMode_BBN_03"
-		mdSituacionMode_BBN_03.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBN_03)
 
 		mdSituacionMode_BNB_03.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNB_03.ident = "SituacionMode_BNB_03"
-		mdSituacionMode_BNB_03.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNB_03)
 
 		mdSituacionMode_BNN_03.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNN_03.ident = "SituacionMode_BNN_03"
-		mdSituacionMode_BNN_03.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNN_03)
 
 		mdSituacionMode_NBB_03.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBB_03.ident = "SituacionMode_NBB_03"
-		mdSituacionMode_NBB_03.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBB_03)
 
 		mdSituacionMode_NBN_03.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBN_03.ident = "SituacionMode_NBN_03"
-		mdSituacionMode_NBN_03.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBN_03)
 
 		mdSituacionMode_NBV_03.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBV_03.ident = "SituacionMode_NBV_03"
-		mdSituacionMode_NBV_03.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBV_03)
 
 		mdSituacionMode_NNB_03.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNB_03.ident = "SituacionMode_NNB_03"
-		mdSituacionMode_NNB_03.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNB_03)
 
 		mdSituacionMode_NNN_03.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNN_03.ident = "SituacionMode_NNN_03"
-		mdSituacionMode_NNN_03.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNN_03)
 
 		mdSituacionMode_VBN_03.id = identcounter
 		identcounter += 1
-		mdSituacionMode_VBN_03.ident = "SituacionMode_VBN_03"
-		mdSituacionMode_VBN_03.description = ""
 		sysSituacion.addMode(mdSituacionMode_VBN_03)
 
 		mdSituacionMode_BBB_04.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBB_04.ident = "SituacionMode_BBB_04"
-		mdSituacionMode_BBB_04.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBB_04)
 
 		mdSituacionMode_BBN_04.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBN_04.ident = "SituacionMode_BBN_04"
-		mdSituacionMode_BBN_04.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBN_04)
 
 		mdSituacionMode_BNB_04.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNB_04.ident = "SituacionMode_BNB_04"
-		mdSituacionMode_BNB_04.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNB_04)
 
 		mdSituacionMode_BNN_04.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNN_04.ident = "SituacionMode_BNN_04"
-		mdSituacionMode_BNN_04.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNN_04)
 
 		mdSituacionMode_NBB_04.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBB_04.ident = "SituacionMode_NBB_04"
-		mdSituacionMode_NBB_04.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBB_04)
 
 		mdSituacionMode_NBN_04.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBN_04.ident = "SituacionMode_NBN_04"
-		mdSituacionMode_NBN_04.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBN_04)
 
 		mdSituacionMode_NBV_04.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBV_04.ident = "SituacionMode_NBV_04"
-		mdSituacionMode_NBV_04.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBV_04)
 
 		mdSituacionMode_NNB_04.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNB_04.ident = "SituacionMode_NNB_04"
-		mdSituacionMode_NNB_04.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNB_04)
 
 		mdSituacionMode_NNN_04.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNN_04.ident = "SituacionMode_NNN_04"
-		mdSituacionMode_NNN_04.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNN_04)
 
 		mdSituacionMode_VBN_04.id = identcounter
 		identcounter += 1
-		mdSituacionMode_VBN_04.ident = "SituacionMode_VBN_04"
-		mdSituacionMode_VBN_04.description = ""
 		sysSituacion.addMode(mdSituacionMode_VBN_04)
 
 		mdSituacionMode_BBB_05.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBB_05.ident = "SituacionMode_BBB_05"
-		mdSituacionMode_BBB_05.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBB_05)
 
 		mdSituacionMode_BBN_05.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBN_05.ident = "SituacionMode_BBN_05"
-		mdSituacionMode_BBN_05.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBN_05)
 
 		mdSituacionMode_BNB_05.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNB_05.ident = "SituacionMode_BNB_05"
-		mdSituacionMode_BNB_05.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNB_05)
 
 		mdSituacionMode_BNN_05.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNN_05.ident = "SituacionMode_BNN_05"
-		mdSituacionMode_BNN_05.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNN_05)
 
 		mdSituacionMode_NBB_05.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBB_05.ident = "SituacionMode_NBB_05"
-		mdSituacionMode_NBB_05.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBB_05)
 
 		mdSituacionMode_NBN_05.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBN_05.ident = "SituacionMode_NBN_05"
-		mdSituacionMode_NBN_05.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBN_05)
 
 		mdSituacionMode_NNB_05.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNB_05.ident = "SituacionMode_NNB_05"
-		mdSituacionMode_NNB_05.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNB_05)
 
 		mdSituacionMode_NNN_05.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNN_05.ident = "SituacionMode_NNN_05"
-		mdSituacionMode_NNN_05.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNN_05)
 
 		mdSituacionMode_VBN_06.id = identcounter
 		identcounter += 1
-		mdSituacionMode_VBN_06.ident = "SituacionMode_VBN_06"
-		mdSituacionMode_VBN_06.description = ""
 		sysSituacion.addMode(mdSituacionMode_VBN_06)
 
 		mdSituacionMode_NBB_06.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBB_06.ident = "SituacionMode_NBB_06"
-		mdSituacionMode_NBB_06.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBB_06)
 
 		mdSituacionMode_BNB_06.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNB_06.ident = "SituacionMode_BNB_06"
-		mdSituacionMode_BNB_06.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNB_06)
 
 		mdSituacionMode_NBN_06.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBN_06.ident = "SituacionMode_NBN_06"
-		mdSituacionMode_NBN_06.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBN_06)
 
 		mdSituacionMode_NNN_06.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNN_06.ident = "SituacionMode_NNN_06"
-		mdSituacionMode_NNN_06.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNN_06)
 
 		mdSituacionMode_BNN_06.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNN_06.ident = "SituacionMode_BNN_06"
-		mdSituacionMode_BNN_06.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNN_06)
 
 		mdSituacionMode_BBN_06.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBN_06.ident = "SituacionMode_BBN_06"
-		mdSituacionMode_BBN_06.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBN_06)
 
 		mdSituacionMode_BBB_06.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBB_06.ident = "SituacionMode_BBB_06"
-		mdSituacionMode_BBB_06.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBB_06)
 
 		mdSituacionMode_NBV_06.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBV_06.ident = "SituacionMode_NBV_06"
-		mdSituacionMode_NBV_06.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBV_06)
 
 		mdSituacionMode_NNB_06.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNB_06.ident = "SituacionMode_NNB_06"
-		mdSituacionMode_NNB_06.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNB_06)
 
 		mdSituacionMode_BBB_07.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBB_07.ident = "SituacionMode_BBB_07"
-		mdSituacionMode_BBB_07.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBB_07)
 
 		mdSituacionMode_BBN_07.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BBN_07.ident = "SituacionMode_BBN_07"
-		mdSituacionMode_BBN_07.description = ""
 		sysSituacion.addMode(mdSituacionMode_BBN_07)
 
 		mdSituacionMode_BNB_07.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNB_07.ident = "SituacionMode_BNB_07"
-		mdSituacionMode_BNB_07.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNB_07)
 
 		mdSituacionMode_BNN_07.id = identcounter
 		identcounter += 1
-		mdSituacionMode_BNN_07.ident = "SituacionMode_BNN_07"
-		mdSituacionMode_BNN_07.description = ""
 		sysSituacion.addMode(mdSituacionMode_BNN_07)
 
 		mdSituacionMode_NBB_07.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBB_07.ident = "SituacionMode_NBB_07"
-		mdSituacionMode_NBB_07.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBB_07)
 
 		mdSituacionMode_NBN_07.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBN_07.ident = "SituacionMode_NBN_07"
-		mdSituacionMode_NBN_07.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBN_07)
 
 		mdSituacionMode_NBV_07.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NBV_07.ident = "SituacionMode_NBV_07"
-		mdSituacionMode_NBV_07.description = ""
 		sysSituacion.addMode(mdSituacionMode_NBV_07)
 
 		mdSituacionMode_NNB_07.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNB_07.ident = "SituacionMode_NNB_07"
-		mdSituacionMode_NNB_07.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNB_07)
 
 		mdSituacionMode_NNN_07.id = identcounter
 		identcounter += 1
-		mdSituacionMode_NNN_07.ident = "SituacionMode_NNN_07"
-		mdSituacionMode_NNN_07.description = ""
 		sysSituacion.addMode(mdSituacionMode_NNN_07)
 
 		mdSituacionMode_VBN_07.id = identcounter
 		identcounter += 1
-		mdSituacionMode_VBN_07.ident = "SituacionMode_VBN_07"
-		mdSituacionMode_VBN_07.description = ""
 		sysSituacion.addMode(mdSituacionMode_VBN_07)
 
 		mdSituacionMode_VVB_07.id = identcounter
 		identcounter += 1
-		mdSituacionMode_VVB_07.ident = "SituacionMode_VVB_07"
-		mdSituacionMode_VVB_07.description = ""
 		sysSituacion.addMode(mdSituacionMode_VVB_07)
 
 		mdSituacionMode_VVV_07.id = identcounter
 		identcounter += 1
-		mdSituacionMode_VVV_07.ident = "SituacionMode_VVV_07"
-		mdSituacionMode_VVV_07.description = ""
 		sysSituacion.addMode(mdSituacionMode_VVV_07)
 
 		mdSituacionMode_VVV_08.id = identcounter
 		identcounter += 1
-		mdSituacionMode_VVV_08.ident = "SituacionMode_VVV_08"
-		mdSituacionMode_VVV_08.description = ""
 		sysSituacion.addMode(mdSituacionMode_VVV_08)
 
 		mdSituacionMode_VBN_08.id = identcounter
 		identcounter += 1
-		mdSituacionMode_VBN_08.ident = "SituacionMode_VBN_08"
-		mdSituacionMode_VBN_08.description = ""
 		sysSituacion.addMode(mdSituacionMode_VBN_08)
 
 		mdSituacionMode_VVB_08.id = identcounter
 		identcounter += 1
-		mdSituacionMode_VVB_08.ident = "SituacionMode_VVB_08"
-		mdSituacionMode_VVB_08.description = ""
 		sysSituacion.addMode(mdSituacionMode_VVB_08)
 
 		sysDecisionMovimiento.id = identcounter
 		identcounter += 1
-		sysDecisionMovimiento.ident = "DecisionMovimiento"
-		sysDecisionMovimiento.description = ""
 		sysSituacion.addSubsystem(sysDecisionMovimiento);
 
 		mdDecisionMovimientoMode_UNKNOWN.id = identcounter
 		identcounter += 1
-		mdDecisionMovimientoMode_UNKNOWN.ident = "DecisionMovimientoMode_UNKNOWN";
-		mdDecisionMovimientoMode_UNKNOWN.description = "";
 		sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_UNKNOWN);
 
 		mdDecisionMovimientoMode_Avanzar.id = identcounter
 		identcounter += 1
-		mdDecisionMovimientoMode_Avanzar.ident = "DecisionMovimientoMode_Avanzar"
-		mdDecisionMovimientoMode_Avanzar.description = ""
 		sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_Avanzar)
 
 		mdDecisionMovimientoMode_CompasIzq.id = identcounter
 		identcounter += 1
-		mdDecisionMovimientoMode_CompasIzq.ident = "DecisionMovimientoMode_CompasIzq"
-		mdDecisionMovimientoMode_CompasIzq.description = ""
 		sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_CompasIzq)
 
 		mdDecisionMovimientoMode_CompasDer.id = identcounter
 		identcounter += 1
-		mdDecisionMovimientoMode_CompasDer.ident = "DecisionMovimientoMode_CompasDer"
-		mdDecisionMovimientoMode_CompasDer.description = ""
 		sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_CompasDer)
 
 		mdDecisionMovimientoMode_GirarDer.id = identcounter
 		identcounter += 1
-		mdDecisionMovimientoMode_GirarDer.ident = "DecisionMovimientoMode_GirarDer"
-		mdDecisionMovimientoMode_GirarDer.description = ""
 		sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_GirarDer)
 
 		mdDecisionMovimientoMode_GirarIzq.id = identcounter
 		identcounter += 1
-		mdDecisionMovimientoMode_GirarIzq.ident = "DecisionMovimientoMode_GirarIzq"
-		mdDecisionMovimientoMode_GirarIzq.description = ""
 		sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_GirarIzq)
 
 		mdDecisionMovimientoMode_Parar.id = identcounter
 		identcounter += 1
-		mdDecisionMovimientoMode_Parar.ident = "DecisionMovimientoMode_Parar"
-		mdDecisionMovimientoMode_Parar.description = ""
 		sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_Parar)
 
 		prRuedaDer.id = identcounter
 		identcounter += 1
-		prRuedaDer.ident = "RuedaDer"
-		prRuedaDer.description = ""
 		sysDecisionMovimiento.addParam(prRuedaDer)
 		vlRuedaDer_UNKNOWN.id = identcounter
 		identcounter += 1
-		vlRuedaDer_UNKNOWN.ident = "RuedaDer_UNKNOWN"
-		vlRuedaDer_UNKNOWN.description = "Unknown value for RuedaDer"
 		prRuedaDer.addValue(vlRuedaDer_UNKNOWN)
 
 		mdRuedaDerMode_UNKNOWN.id = identcounter
 		identcounter += 1
-		mdRuedaDerMode_UNKNOWN.ident = "RuedaDerMode_UNKNOWN"
-		mdRuedaDerMode_UNKNOWN.description = "Unknown mode for RuedaDer"
 		prRuedaDer.addMode(mdRuedaDerMode_UNKNOWN)
 		mdRuedaDerMode_UNKNOWN.addValue(vlRuedaDer_UNKNOWN)
 		mdDecisionMovimientoMode_UNKNOWN.addSubMode(mdRuedaDerMode_UNKNOWN)
 
 		mdRuedaDerMode_Parada.id = identcounter
 		identcounter += 1
-		mdRuedaDerMode_Parada.ident = "RuedaDerMode_Parada"
-		mdRuedaDerMode_Parada.description = ""
 		prRuedaDer.addMode(mdRuedaDerMode_Parada)
 
 		mdRuedaDerMode_Avanzar.id = identcounter
 		identcounter += 1
-		mdRuedaDerMode_Avanzar.ident = "RuedaDerMode_Avanzar"
-		mdRuedaDerMode_Avanzar.description = ""
 		prRuedaDer.addMode(mdRuedaDerMode_Avanzar)
 
 		mdRuedaDerMode_Retroceder.id = identcounter
 		identcounter += 1
-		mdRuedaDerMode_Retroceder.ident = "RuedaDerMode_Retroceder"
-		mdRuedaDerMode_Retroceder.description = ""
 		prRuedaDer.addMode(mdRuedaDerMode_Retroceder)
 
 		vlRuedaDer_Quieta.id = identcounter
 		identcounter += 1
-		vlRuedaDer_Quieta.ident = "RuedaDer_Quieta"
-		vlRuedaDer_Quieta.description = ""
 		prRuedaDer.addValue(vlRuedaDer_Quieta)
 
 		vlRuedaDer_Adelante.id = identcounter
 		identcounter += 1
-		vlRuedaDer_Adelante.ident = "RuedaDer_Adelante"
-		vlRuedaDer_Adelante.description = ""
 		prRuedaDer.addValue(vlRuedaDer_Adelante)
 
 		vlRuedaDer_Atras.id = identcounter
 		identcounter += 1
-		vlRuedaDer_Atras.ident = "RuedaDer_Atras"
-		vlRuedaDer_Atras.description = ""
 		prRuedaDer.addValue(vlRuedaDer_Atras)
 
 		prRuedaIzq.id = identcounter
 		identcounter += 1
-		prRuedaIzq.ident = "RuedaIzq"
-		prRuedaIzq.description = ""
 		sysDecisionMovimiento.addParam(prRuedaIzq)
 		vlRuedaIzq_UNKNOWN.id = identcounter
 		identcounter += 1
-		vlRuedaIzq_UNKNOWN.ident = "RuedaIzq_UNKNOWN"
-		vlRuedaIzq_UNKNOWN.description = "Unknown value for RuedaIzq"
 		prRuedaIzq.addValue(vlRuedaIzq_UNKNOWN)
 
 		mdRuedaIzqMode_UNKNOWN.id = identcounter
 		identcounter += 1
-		mdRuedaIzqMode_UNKNOWN.ident = "RuedaIzqMode_UNKNOWN"
-		mdRuedaIzqMode_UNKNOWN.description = "Unknown mode for RuedaIzq"
 		prRuedaIzq.addMode(mdRuedaIzqMode_UNKNOWN)
 		mdRuedaIzqMode_UNKNOWN.addValue(vlRuedaIzq_UNKNOWN)
 		mdDecisionMovimientoMode_UNKNOWN.addSubMode(mdRuedaIzqMode_UNKNOWN)
 
 		mdRuedaIzqMode_Parada.id = identcounter
 		identcounter += 1
-		mdRuedaIzqMode_Parada.ident = "RuedaIzqMode_Parada"
-		mdRuedaIzqMode_Parada.description = ""
 		prRuedaIzq.addMode(mdRuedaIzqMode_Parada)
 
 		mdRuedaIzqMode_Avanzar.id = identcounter
 		identcounter += 1
-		mdRuedaIzqMode_Avanzar.ident = "RuedaIzqMode_Avanzar"
-		mdRuedaIzqMode_Avanzar.description = ""
 		prRuedaIzq.addMode(mdRuedaIzqMode_Avanzar)
 
 		mdRuedaIzqMode_Retroceder.id = identcounter
 		identcounter += 1
-		mdRuedaIzqMode_Retroceder.ident = "RuedaIzqMode_Retroceder"
-		mdRuedaIzqMode_Retroceder.description = ""
 		prRuedaIzq.addMode(mdRuedaIzqMode_Retroceder)
 
 		vlRuedaIzq_Quieta.id = identcounter
 		identcounter += 1
-		vlRuedaIzq_Quieta.ident = "RuedaIzq_Quieta"
-		vlRuedaIzq_Quieta.description = ""
 		prRuedaIzq.addValue(vlRuedaIzq_Quieta)
 
 		vlRuedaIzq_Adelante.id = identcounter
 		identcounter += 1
-		vlRuedaIzq_Adelante.ident = "RuedaIzq_Adelante"
-		vlRuedaIzq_Adelante.description = ""
 		prRuedaIzq.addValue(vlRuedaIzq_Adelante)
 
 		vlRuedaIzq_Atras.id = identcounter
 		identcounter += 1
-		vlRuedaIzq_Atras.ident = "RuedaIzq_Atras"
-		vlRuedaIzq_Atras.description = ""
 		prRuedaIzq.addValue(vlRuedaIzq_Atras)
 
 		sysNuevoPaso.id = identcounter
 		identcounter += 1
-		sysNuevoPaso.ident = "NuevoPaso"
-		sysNuevoPaso.description = ""
 		sysSituacion.addSubsystem(sysNuevoPaso);
 
 		mdNuevoPasoMode_UNKNOWN.id = identcounter
 		identcounter += 1
-		mdNuevoPasoMode_UNKNOWN.ident = "NuevoPasoMode_UNKNOWN";
-		mdNuevoPasoMode_UNKNOWN.description = "";
 		sysNuevoPaso.addMode(mdNuevoPasoMode_UNKNOWN);
 
 		mdNuevoPasoMode_Si.id = identcounter
 		identcounter += 1
-		mdNuevoPasoMode_Si.ident = "NuevoPasoMode_Si"
-		mdNuevoPasoMode_Si.description = ""
 		sysNuevoPaso.addMode(mdNuevoPasoMode_Si)
 
 		sysDecisionSeguidor.id = identcounter
 		identcounter += 1
-		sysDecisionSeguidor.ident = "DecisionSeguidor"
-		sysDecisionSeguidor.description = ""
 		sysSituacion.addSubsystem(sysDecisionSeguidor);
 
 		mdDecisionSeguidorMode_UNKNOWN.id = identcounter
 		identcounter += 1
-		mdDecisionSeguidorMode_UNKNOWN.ident = "DecisionSeguidorMode_UNKNOWN";
-		mdDecisionSeguidorMode_UNKNOWN.description = "";
 		sysDecisionSeguidor.addMode(mdDecisionSeguidorMode_UNKNOWN);
 
 		mdDecisionSeguidorMode_BNB.id = identcounter
 		identcounter += 1
-		mdDecisionSeguidorMode_BNB.ident = "DecisionSeguidorMode_BNB"
-		mdDecisionSeguidorMode_BNB.description = ""
 		sysDecisionSeguidor.addMode(mdDecisionSeguidorMode_BNB)
 
 		mdDecisionSeguidorMode_VVB.id = identcounter
 		identcounter += 1
-		mdDecisionSeguidorMode_VVB.ident = "DecisionSeguidorMode_VVB"
-		mdDecisionSeguidorMode_VVB.description = ""
 		sysDecisionSeguidor.addMode(mdDecisionSeguidorMode_VVB)
 
 		sysDecisionAparejo.id = identcounter
 		identcounter += 1
-		sysDecisionAparejo.ident = "DecisionAparejo"
-		sysDecisionAparejo.description = ""
 		sysTramo.addSubsystem(sysDecisionAparejo);
 
 		mdDecisionAparejoMode_UNKNOWN.id = identcounter
 		identcounter += 1
-		mdDecisionAparejoMode_UNKNOWN.ident = "DecisionAparejoMode_UNKNOWN";
-		mdDecisionAparejoMode_UNKNOWN.description = "";
 		sysDecisionAparejo.addMode(mdDecisionAparejoMode_UNKNOWN);
 
 		mdDecisionAparejoMode_Abierto.id = identcounter
 		identcounter += 1
-		mdDecisionAparejoMode_Abierto.ident = "DecisionAparejoMode_Abierto"
-		mdDecisionAparejoMode_Abierto.description = ""
 		sysDecisionAparejo.addMode(mdDecisionAparejoMode_Abierto)
 
 		mdDecisionAparejoMode_Medio.id = identcounter
 		identcounter += 1
-		mdDecisionAparejoMode_Medio.ident = "DecisionAparejoMode_Medio"
-		mdDecisionAparejoMode_Medio.description = ""
 		sysDecisionAparejo.addMode(mdDecisionAparejoMode_Medio)
 
 		mdDecisionAparejoMode_Cerrado.id = identcounter
 		identcounter += 1
-		mdDecisionAparejoMode_Cerrado.ident = "DecisionAparejoMode_Cerrado"
-		mdDecisionAparejoMode_Cerrado.description = ""
 		sysDecisionAparejo.addMode(mdDecisionAparejoMode_Cerrado)
 
 		mdMisionMode_Engineering.id = identcounter
 		identcounter += 1
-		mdMisionMode_Engineering.ident = "MisionMode_Engineering"
-		mdMisionMode_Engineering.description = "Mision engineering mode"
 		sysMision.addMode(mdMisionMode_Engineering)
 
 		mdTramoMode_Engineering.id = identcounter
 		identcounter += 1
-		mdTramoMode_Engineering.ident = "TramoMode_Engineering"
-		mdTramoMode_Engineering.description = "Tramo engineering mode"
 		sysTramo.addMode(mdTramoMode_Engineering)
 
 		mdSituacionMode_Engineering.id = identcounter
 		identcounter += 1
-		mdSituacionMode_Engineering.ident = "SituacionMode_Engineering"
-		mdSituacionMode_Engineering.description = "Situacion engineering mode"
 		sysSituacion.addMode(mdSituacionMode_Engineering)
 
 		mdDecisionMovimientoMode_Engineering.id = identcounter
 		identcounter += 1
-		mdDecisionMovimientoMode_Engineering.ident = "DecisionMovimientoMode_Engineering"
-		mdDecisionMovimientoMode_Engineering.description = "DecisionMovimiento engineering mode"
 		sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_Engineering)
 		# Marcamos TramoMode_P00_SituarBNB_finBNB_Avanzar como elegible para MisionMode_Normal
 		mdMisionMode_Normal.addSubMode(mdTramoMode_P00_SituarBNB_finBNB_Avanzar)
