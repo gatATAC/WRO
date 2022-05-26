@@ -14,16 +14,16 @@ class csysWRO {
 	//  Device Magnitudes
 	//----------------------------------------------------------------------
 
-	// --------- prSys Mision -----------------
+	// --------- prSys Misión -----------------
 	/**
-	* Enum MisionMode
+	* Enum MisiónMode
 	* @description Enum [Mode]
-	* @maximum     MisionNormal
-	* @minimum     MisionUNKNOWN
-	* @values      MisionUNKNOWN,MisionNormal
+	* @maximum     MisiónNormal
+	* @minimum     MisiónUNKNOWN
+	* @values      MisiónUNKNOWN,MisiónNormal
 	*/
-	enum class enum_MisionMode {MisionUNKNOWN,MisionNormal}
-	enum_MisionMode enumMisionMode
+	enum class enum_MisiónMode {MisiónUNKNOWN,MisiónNormal}
+	enum_MisiónMode enumMisiónMode
 
 	// --------- prSys Tramo -----------------
 	/**
@@ -62,11 +62,11 @@ class csysWRO {
 	/**
 	* Enum RuedaDer
 	* @description Enum 
-	* @maximum     RuedaDer_Atras
+	* @maximum     RuedaDer_Atrás
 	* @minimum     RuedaDer_UNKNOWN
-	* @values      RuedaDer_UNKNOWN,RuedaDer_Quieta,RuedaDer_Adelante,RuedaDer_Atras
+	* @values      RuedaDer_UNKNOWN,RuedaDer_Quieta,RuedaDer_Adelante,RuedaDer_Atrás
 	*/
-	enum class enum_RuedaDer {RuedaDer_UNKNOWN,RuedaDer_Quieta,RuedaDer_Adelante,RuedaDer_Atras}
+	enum class enum_RuedaDer {RuedaDer_UNKNOWN,RuedaDer_Quieta,RuedaDer_Adelante,RuedaDer_Atrás}
 	enum_RuedaDer enumRuedaDer
 
 	/**
@@ -83,11 +83,11 @@ class csysWRO {
 	/**
 	* Enum RuedaIzq
 	* @description Enum 
-	* @maximum     RuedaIzq_Atras
+	* @maximum     RuedaIzq_Atrás
 	* @minimum     RuedaIzq_UNKNOWN
-	* @values      RuedaIzq_UNKNOWN,RuedaIzq_Quieta,RuedaIzq_Adelante,RuedaIzq_Atras
+	* @values      RuedaIzq_UNKNOWN,RuedaIzq_Quieta,RuedaIzq_Adelante,RuedaIzq_Atrás
 	*/
-	enum class enum_RuedaIzq {RuedaIzq_UNKNOWN,RuedaIzq_Quieta,RuedaIzq_Adelante,RuedaIzq_Atras}
+	enum class enum_RuedaIzq {RuedaIzq_UNKNOWN,RuedaIzq_Quieta,RuedaIzq_Adelante,RuedaIzq_Atrás}
 	enum_RuedaIzq enumRuedaIzq
 
 	/**
@@ -104,11 +104,11 @@ class csysWRO {
 	/**
 	* Enum NuevoPasoMode
 	* @description Enum [Mode]
-	* @maximum     NuevoPasoSi
+	* @maximum     NuevoPasoSí
 	* @minimum     NuevoPasoUNKNOWN
-	* @values      NuevoPasoUNKNOWN,NuevoPasoSi
+	* @values      NuevoPasoUNKNOWN,NuevoPasoNo,NuevoPasoSí
 	*/
-	enum class enum_NuevoPasoMode {NuevoPasoUNKNOWN,NuevoPasoSi}
+	enum class enum_NuevoPasoMode {NuevoPasoUNKNOWN,NuevoPasoNo,NuevoPasoSí}
 	enum_NuevoPasoMode enumNuevoPasoMode
 
 	// --------- prSys DecisionSeguidor -----------------
@@ -140,9 +140,9 @@ class csysWRO {
 
 	public:
 
-	/* MisionMode */
-	enum_MisionMode get_MisionMode(void)
-	enum_MisionMode set_MisionMode(enum_MisionMode value)
+	/* MisiónMode */
+	enum_MisiónMode get_MisiónMode(void)
+	enum_MisiónMode set_MisiónMode(enum_MisiónMode value)
 
 	/* TramoMode */
 	enum_TramoMode get_TramoMode(void)
