@@ -1,4 +1,4 @@
-'''
+
 from spike import PrimeHub, LightMatrix, Button, StatusLight, ForceSensor, MotionSensor, Speaker, ColorSensor, App, DistanceSensor, Motor, MotorPair
 from spike.control import wait_for_seconds, wait_until, Timer
 from math import *
@@ -6,701 +6,986 @@ from math import *
 hub = PrimeHub()
 
 hub.light_matrix.show_image('HAPPY')
-'''
-class PR:
-    myclassname = "PR"
+
+debug = False
+
+class PORIS:
+    myclassname = "PORIS"
+    id = None
+    idx = None
+    ident = None
     name = None
+    description = None
     parent = None
     def __init__(self,name):
         self.name = name
+        
+        
+class PORISValue(PORIS):
+    myclassname = "PORISValue"
+    
+class PORISValueFloat(PORISValue):
+    myclassname = "PORISValueFloat"
+    data = None
+    min = None
+    max = None
+    default_data = None
 
+    def setData(self,floatdata):
+        if debug:
+            print("Applying", floatdata, "name:", self.name, "min:", self.min, "max:", self.max)
 
-class PRValue(PR):
-    myclassname = "PRValue"
+        if floatdata >= self.min:
+            if floatdata <= max:
+                self.data = floatdata
+        
+        return self.data
 
-class PRMode(PR):
+class PORISValueText(PORISValue):
+    myclassname = "PORISValueText"
+    data = None
+    default_data = None
+    
+    def setData(self,strdata):
+        self.data = strdata
+        
+        return self.data    
 
+class PORISMode(PORIS):
+    
     def __init__(self,name):
-        super(PRMode, self).__init__(name)
-        self.vls = {}
+        super(PORISMode, self).__init__(name)
+        self.values = {}
         self.submodes = {}
-
-    def aSM(self,m):
+        
+    def addSubMode(self,m):
         self.submodes[m.name] = m
 
-    def aV(self,v):
-        self.vls[v.name] = v
+    def addValue(self,v):
+        self.values[v.name] = v
+    
+    def getEligibleValue(self,v,current):
+        if debug:
+            if (v != None):
+                print("Entro en PORISMode getEligibleValue para el modo", self.name, "con valor propuesto", v.name)
+            else:
+                print("Entro en PORISMode getEligibleValue para el modo", self.name, "con valor propuesto NULO")
+    
+            print(self.values.keys())
 
-    def getEgValue(self,v,curr):
         ret = None
-        if v.name in self.vls.keys():
+        if v.name in self.values.keys():
             ret = v
         else:
-            if curr.name in self.vls.keys():
-                ret = curr
+            if current.name in self.values.keys():
+                ret = current
             else:
-                itk = list(self.vls.keys())[0]
-                ret = self.vls[itk]
+                itk = list(self.values.keys())[0]
+                ret = self.values[itk]
 
         return ret
+    
+    def getEligibleSubMode(self,m,current):
+        if debug:
+            print("Entro en PORISMode getEligibleSubMode para el modo", self.name, "con m =", m.name)
 
-    def getEgSMd(self,m,curr):
         ret = None
         found = False
 
+        if debug:
+            print(self.submodes.keys())
+
         if m.name in self.submodes.keys():
             ret = m
-
+        
         else:
-            if curr.name in self.submodes.keys():
-                ret = curr
-
+            if current.name in self.submodes.keys():
+                ret = current
+                
             else:
                 # If none of two are found, search the first submode with the same parent
+                if debug:
+                    print("Pruebo aqui",self.submodes.keys())
+
                 for ks in self.submodes.keys():
                     s = self.submodes[ks]
+                    if debug:
+                        print(s.name,s.parent.name)
+
                     if s.parent == m.parent:
                         ret = s
                         break
 
         return ret
-
-
-class PRNode(PR):
-    selM = None
+    
+    def getEligibleValueFromIdx(self,idx,current):
+        vk = list(self.values.keys())[idx]
+        result = self.getEligibleValue(self.values[vk],current)
+        if result is None:
+            ret = 0
+        else:
+            ret = result.idx
+        
+        return ret
+    
+    def getEligibleSubModeFromIdx(self,idx,current):
+        mk = list(self.submodes.keys())[idx]
+        result = self.getEligibleSubMode(self.submodes[mk],current)
+        if result is None:
+            ret = 0
+        else:
+            ret = result.idx
+        
+        return ret
+    
+class PORISNode(PORIS):
+    selectedMode = None
 
     def __init__(self,name):
-        super(PRNode, self).__init__(name)
-        self.mds = {}
-
-
-    def aM(self,m):
-        self.mds[m.name] = m
+        super(PORISNode, self).__init__(name)
+        self.modes = {}
+    
+    
+    def addMode(self,m):
+        self.modes[m.name] = m
         m.parent = self
-        if self.selM == None:
-            self.selM = m
+        if self.selectedMode == None:
+            self.selectedMode = m
 
     def init(self):
-        firstMode = list(self.mds.keys())[0]
-        self.sM(firstMode)
+        if debug:
+            print("Init de",self.name,", número de modos:" , len(self.modes))
 
-    def setEgMode(self):
-        if self.selM is None:
+        firstMode = list(self.modes.keys())[0]
+        if debug:
+            print("Init ", self.name + ":",firstMode.name)
+
+        self.setMode(firstMode)    
+    
+    def setEligibleMode(self):
+        if debug:
+            print("Entro en PORISNode setEligibleMode", self.name)
+
+        if self.selectedMode is None:
+            if debug:
+                print("- selectedMode es NULO")
+
             self.init()
+            
+        if debug:
+            print("- selectedMode es ahora", self.selectedMode.name)
 
-        # TODO: Check if this sM is redundant
-        return self.sM(self.selM)
+        # TODO: Check if this setMode is redundant
+        return self.setMode(self.selectedMode)
 
-    def sM(self,m):
+    def setMode(self,m):
         return None
 
-    def getEgMode(self,m):
+    def setModeFromIdx(self,idx):
+        mk = list(self.modes.keys())[idx]
+        result = self.setMode(self.modes[mk])
+        if result is None:
+            ret = 0
+        else:
+            ret = result.idx
+        
+        if debug:
+            print("Acaba la operación setMode con resultado", ret)
+
+        return ret
+
+    def getEligibleMode(self,m):
+        if debug:
+            print("Entro en PORISNode ",self.name, ".getEligibleMode("+m.name+")")
+
         ret = None
         if self.parent is None:
+            if debug:
+                print("El padre de", self.name, "es nulo")
+
             ret = m
-
+        
         else:
-            ret = self.parent.selM.getEgSMd(m,self.selM)
+            if debug:
+                print("Buscamos entre los", len(self.parent.selectedMode.submodes),"submodos de",self.parent.name)
+                print("selectedMode",self.selectedMode.name,m.name)
 
-        return ret
-
-
-class PRParam(PRNode):
-    selV = None
-
-    def __init__(self,name):
-        super(PRParam, self).__init__(name)
-        self.vls = {}
-
-    def aV(self,v):
-        self.vls[v.name] = v
-        v.parent = self
-        if self.selV == None:
-            self.selV = v
-
-    def setEgValue(self):
-        return self.sV(self.selV)
-
-    def sM(self,m):
-        ret = self.getEgMode(m)
+            ret = self.parent.selectedMode.getEligibleSubMode(m,self.selectedMode)
 
         if ret is None:
-            mk = list(self.mds.keys())[0]
-            ret = self.mds[mk]
+            if debug:
+                print("No hubo suerte, el modo a seleccionar es nulo")
+        
+        else:
+            if debug:
+                print("El modo seleccionado es",ret.name)
+        
+        return ret
 
-        if ret != self.selM:
-            self.selM = ret
-            self.sV(self.selV)
+
+    def getEligibleModeFromIdx(self,idx):
+        mk = list(self.modes.keys())[idx]
+        result = self.getEligibleMode(self.submodes[mk])
+        if result is None:
+            ret = 0
+        else:
+            ret = result.idx
+        
+        return ret
+
+    def getModeFromName(self,name):
+        ret = None
+        if name in self.modes.keys():
+            ret = self.modes[name]
+
+        return ret        
+
+
+class PORISParam(PORISNode):
+    selectedValue = None
+  
+    def __init__(self,name):
+        super(PORISParam, self).__init__(name)
+        self.values = {}
+  
+    def addValue(self,v):
+        self.values[v.name] = v
+        v.parent = self
+        if self.selectedValue == None:
+            self.selectedValue = v
+
+    def setEligibleValue(self):
+        if debug:
+            print("Entro en PORISParam setEligibleValue", self.name)
+
+        return self.setValue(self.selectedValue)
+    
+    def setMode(self,m):
+        if debug:
+            print("Entro en Param",self.name+".setMode("+ m.name+"\")")
+
+        ret = self.getEligibleMode(m)
+
+        if debug:
+            print("Estoy en",self.name)
+            print(list(self.modes.keys()))
+
+        if ret is None:
+            mk = list(self.modes.keys())[0]
+            ret = self.modes[mk]
+
+        if ret != self.selectedMode:
+            self.selectedMode = ret
+            self.setValue(self.selectedValue)
 
         return ret
 
-    def getEgValue(self,v,curr):
+    def getValueFromName(self,name):
         ret = None
-        if self.selM is None:
+        if name in self.values.keys():
+            ret = self.values[name]
+
+        return ret        
+
+    def getEligibleValue(self,v,current):
+        if debug:
+            if v is None:
+                print("Entro en PORISParam getEligibleValue ", self.name, "con valor NULO")
+            else:
+                print("Entro en PORISParam getEligibleValue ", self.name, "con valor", v.name)
+
+            print("***",self.name,self.selectedMode.name,self.modes)
+
+        ret = None
+        
+        if self.selectedMode is None:
+            if debug:
+                print("- selectedMode es NULO")
+
             self.init()
 
-        ret = self.selM.getEgValue(v,curr)
-
+        ret = self.selectedMode.getEligibleValue(v,current)
+        
         return ret
 
-    def sV(self,v):
-        ret = self.getEgValue(v,self.selV)
-        if ret != self.selV:
-            self.selV = ret
+    def setValue(self,v):
+        if debug:
+            if v is None:
+                print("Entro en PORISParam setValue", self.name, "con valor NULO")
+            else:
+                print("Entro en PORISParam setValue", self.name, "con valor", v.name)
 
+        ret = self.getEligibleValue(v,self.selectedValue)
+        if ret != self.selectedValue:
+            self.selectedValue = ret
+            
         return ret
 
-class PRSys(PRNode):
+    def getEligibleValueFromIdx(self,idx,current):
+        vk = list(self.values.keys())[idx]
+        result = self.getEligibleValue(self.values[vk],current)
+        if result is None:
+            ret = 0
+        else:
+            ret = result.idx
+        
+        return ret
+
+    def setValueFromIdx(self,idx):
+        vk = list(self.values.keys())[idx]
+        result = self.setValue(self.values[vk])
+        if result is None:
+            ret = 0
+        else:
+            ret = result.idx
+        
+        return ret
+    
+
+class PORISSys(PORISNode):
 
     def __init__(self,name):
-        super(PRSys, self).__init__(name)
+        super(PORISSys, self).__init__(name)
         self.params = {}
-        self.ss = {}
+        self.subsystems = {}
 
     def addParam(self,p):
         self.params[p.name] = p
         p.parent = self
 
-    def aSS(self,s):
-        self.ss[s.name] = s
+    def addSubsystem(self,s):
+        self.subsystems[s.name] = s
         s.parent = self
+        
+    def setMode(self,m):
+        if debug:
+            print("Entro en Sys setMode de", self.name, "con modo", m.name)
 
-    def sM(self,m):
-        ret = self.getEgMode(m)
+        ret = self.getEligibleMode(m)
         if ret is None:
-            mk = list(self.mds.keys())[0]
-            ret = self.mds[mk]
+            if debug:
+                print("el nuevo modo es NULO que es diferente del seleccionado")
+                print(" Hemos de poner el modo UNKNOWN, que por defecto es el primero")
 
-        if ret != self.selM:
-            self.selM = ret
+            mk = list(self.modes.keys())[0]
+            ret = self.modes[mk]
 
+        if ret != self.selectedMode:
+            if debug:
+                print("el nuevo modo es", ret.name)
+                if self.selectedMode is not None:
+                    print (" que es diferente de",self.selectedMode.name)
+                else:
+                    print(" que es diferente de NULO")
+
+            self.selectedMode = ret
+            
             for k in self.params.keys():
                 p = self.params[k]
-                p.setEgMode()
+                p.setEligibleMode()
 
-            for k in self.ss.keys():
-                s = self.ss[k]
-                s.setEgMode()
+            for k in self.subsystems.keys():
+                s = self.subsystems[k]
+                s.setEligibleMode()
+   
+        else:
+            if debug:
+                print("el modo escogido es el mismo", ret.name)
+
+        if debug:
+            print("Salgo de Sys setMode de", self.name, "con m="+m.name, "y resultado =",ret.name)
+
+        return ret
+
+   
+    def getSubSystemFromName(self,name):
+        ret = None
+        if name in self.subsystems.keys():
+            ret = self.subsystems[name]
+
+        return ret
+    
+    def getSubParamFromName(self,name):
+        ret = None
+        if name in self.params.keys():
+            ret = self.params[name]
+
+        return ret
+    
+    def getDescendantFromName(self,name):
+        ret = self.getSubSystemFromName(name)
+        if ret is None:
+            for sk in self.subsystems.keys():
+                s = self.subsystems[sk]
+                ret = s.getDescendantFromName(name)
+                if ret is not None:
+                    break
+
+        return ret
+    
+    def getDescendantParamFromName(self,name):
+        ret = self.getSubParamFromName(name)
+        if ret is None:
+            print("no es un hijo directo")
+            print(name,self.name,self.subsystems)
+            for sk in self.subsystems.keys():
+                if debug:
+                    print(sk)
+
+                s = self.subsystems[sk]
+                ret = s.getDescendantParamFromName(name)
+                if ret is not None:
+                    if debug:
+                        print("Tenemos",ret)
+
+                    break
 
         return ret
 
 
-class csysWROPR:
+class csysWROPORIS:
 	def __init__(self):
-		self.sysMision = PRSys("Mision")
-		self.mdMisionUNK = PRMode("UNK")
+		self.sysMision = PORISSys("Mision")
+		self.mdMisionUNKNOWN = PORISMode("UNKNOWN")
 		self.root = self.sysMision
-		self.mdMisionNormal = PRMode("Normal")
-		self.sysTr = PRSys("Tr")
-		self.mdTrUNK = PRMode("UNK")
-		self.mdP00  = PRMode("P00")
-		self.mdP01  = PRMode("P01")
-		self.mdP02  = PRMode("P02")
-		self.mdP03  = PRMode("P03")
-		self.mdP04  = PRMode("P04")
-		self.mdP05  = PRMode("P05")
-		self.mdP06  = PRMode("P06")
-		self.mdP07  = PRMode("P07")
-		self.mdP08  = PRMode("P08_")
-		self.sysSit = PRSys("Situacion")
-		self.mdUNK = PRMode("UNK")
-		self.mdBNN00 = PRMode("BNN")
-		self.mdNBB00 = PRMode("NBB")
-		self.mdBBB00 = PRMode("BBB")
-		self.mdNNB00 = PRMode("NNB")
-		self.mdBNB00 = PRMode("BNB")
-		self.mdNBN00 = PRMode("NBN")
-		self.mdBBN00 = PRMode("BBN")
-		self.mdNNN00 = PRMode("NNN")
-		self.mdNBV01 = PRMode("NBV")
-		self.mdBNB01 = PRMode("BNB")
-		self.mdBBB01 = PRMode("BBB")
-		self.mdBNN01 = PRMode("BNN")
-		self.mdNBB01 = PRMode("NBB")
-		self.mdNNB01 = PRMode("NNB")
-		self.mdVBN01 = PRMode("VBN")
-		self.mdBBN01 = PRMode("BBN")
-		self.mdNNN01 = PRMode("NNN")
-		self.mdNBN01 = PRMode("NBN")
-		self.mdBBB02 = PRMode("BBB")
-		self.mdBBN02 = PRMode("BBN")
-		self.mdBNB02 = PRMode("BNB")
-		self.mdBNN02 = PRMode("BNN")
-		self.mdNBB02 = PRMode("NBB")
-		self.mdNBN02 = PRMode("NBN")
-		self.mdNBV02 = PRMode("NBV")
-		self.mdNNB02 = PRMode("NNB")
-		self.mdNNN02 = PRMode("NNN")
-		self.mdVBN02 = PRMode("VBN")
-		self.mdBBB03 = PRMode("BBB")
-		self.mdBBN03 = PRMode("BBN")
-		self.mdBNB03 = PRMode("BNB")
-		self.mdBNN03 = PRMode("BNN")
-		self.mdNBB03 = PRMode("NBB")
-		self.mdNBN03 = PRMode("NBN")
-		self.mdNBV03 = PRMode("NBV")
-		self.mdNNB03 = PRMode("NNB")
-		self.mdNNN03 = PRMode("NNN")
-		self.mdVBN03 = PRMode("VBN")
-		self.mdBBB04 = PRMode("BBB")
-		self.mdBBN04 = PRMode("BBN")
-		self.mdBNB04 = PRMode("BNB")
-		self.mdBNN04 = PRMode("BNN")
-		self.mdNBB04 = PRMode("NBB")
-		self.mdNBN04 = PRMode("NBN")
-		self.mdNBV04 = PRMode("NBV")
-		self.mdNNB04 = PRMode("NNB")
-		self.mdNNN04 = PRMode("NNN")
-		self.mdVBN04 = PRMode("VBN")
-		self.mdBBB05 = PRMode("BBB")
-		self.mdBBN05 = PRMode("BBN")
-		self.mdBNB05 = PRMode("BNB")
-		self.mdBNN05 = PRMode("BNN")
-		self.mdNBB05 = PRMode("NBB")
-		self.mdNBN05 = PRMode("NBN")
-		self.mdNNB05 = PRMode("NNB")
-		self.mdNNN05 = PRMode("NNN")
-		self.mdVBN06 = PRMode("VBN")
-		self.mdNBB06 = PRMode("NBB")
-		self.mdBNB06 = PRMode("BNB")
-		self.mdNBN06 = PRMode("NBN")
-		self.mdNNN06 = PRMode("NNN")
-		self.mdBNN06 = PRMode("BNN")
-		self.mdBBN06 = PRMode("BBN")
-		self.mdBBB06 = PRMode("BBB")
-		self.mdNBV06 = PRMode("NBV")
-		self.mdNNB06 = PRMode("NNB")
-		self.mdBBB07 = PRMode("BBB")
-		self.mdBBN07 = PRMode("BBN")
-		self.mdBNB07 = PRMode("BNB")
-		self.mdBNN07 = PRMode("BNN")
-		self.mdNBB07 = PRMode("NBB")
-		self.mdNBN07 = PRMode("NBN")
-		self.mdNBV07 = PRMode("NBV")
-		self.mdNNB07 = PRMode("NNB")
-		self.mdNNN07 = PRMode("NNN")
-		self.mdVBN07 = PRMode("VBN")
-		self.mdVVB07 = PRMode("VVB")
-		self.mdVVV07 = PRMode("VVV")
-		self.mdVVV08 = PRMode("VVV")
-		self.mdVBN08 = PRMode("VBN")
-		self.mdVVB08 = PRMode("VVB")
-		self.sysDecMov = PRSys("DecMov")
-		self.mdDecMvUNK = PRMode("UNK")
-		self.mdDecMvFw = PRMode("Fw")
-		self.mdCompIzq = PRMode("CompIzq")
-		self.mdCompDer = PRMode("CompDer")
-		self.mdGirarDer = PRMode("GirarDer")
-		self.mdGirarIzq = PRMode("GirarIzq")
-		self.mdStp = PRMode("Stp")
-		self.prRdDer = PRParam("RdDer")
-		self.mdRdDerUNK = PRMode("UNK")
-		self.vlRdDer_UNK = PRValue("UNK")
-		self.mdRdDerStp = PRMode("Stp")
-		self.mdRdDerFw = PRMode("Fw")
-		self.mdRdDerBw = PRMode("Bw")
-		self.vlRdDer_Stp = PRValue("Stp")
-		self.vlRdDer_Fw = PRValue("Fw")
-		self.vlRdDer_Bw = PRValue("Bw")
-		self.prRdIzq = PRParam("RdIzq")
-		self.mdRdIzqUNK = PRMode("UNK")
-		self.vlRdIzq_UNK = PRValue("UNK")
-		self.mdRdIzqStp = PRMode("Stp")
-		self.mdRdIzqFw = PRMode("Fw")
-		self.mdRdIzqBw = PRMode("Bw")
-		self.vlRdIzq_Stp = PRValue("Stp")
-		self.vlRdIzq_Fw = PRValue("Fw")
-		self.vlRdIzq_Bw = PRValue("Bw")
-		self.sysNext = PRSys("Next")
-		self.mdNextUNK = PRMode("UNK")
-		self.mdNextSi = PRMode("Si")
-		self.sysDecSeg = PRSys("DecSeg")
-		self.mdDecSegUNK = PRMode("UNK")
-		self.mdDecSegBNB = PRMode("BNB")
-		self.mdDecSegVVB = PRMode("VVB")
-		self.sysDecAp = PRSys("DecAp")
-		self.mdDecApUNK = PRMode("UNK")
-		self.mdDecApAbi = PRMode("Abi")
-		self.mdDecApMedio = PRMode("Medio")
-		self.mdDecApCerr = PRMode("Cerr")
-		self.sysMision.aM(self.mdMisionUNK)
-		self.sysMision.aM(self.mdMisionNormal)
-		self.sysMision.aSS(self.sysTr)
-		self.sysTr.aM(self.mdTrUNK)
-		self.sysTr.aM(self.mdP00)
-		self.sysTr.aM(self.mdP01)
-		self.sysTr.aM(self.mdP02)
-		self.sysTr.aM(self.mdP03)
-		self.sysTr.aM(self.mdP04)
-		self.sysTr.aM(self.mdP05)
-		self.sysTr.aM(self.mdP06)
-		self.sysTr.aM(self.mdP07)
-		self.sysTr.aM(self.mdP08)
-		self.sysTr.aSS(self.sysSit)
-		self.sysSit.aM(self.mdUNK)
-		self.sysSit.aM(self.mdBNN00)
-		self.sysSit.aM(self.mdNBB00)
-		self.sysSit.aM(self.mdBBB00)
-		self.sysSit.aM(self.mdNNB00)
-		self.sysSit.aM(self.mdBNB00)
-		self.sysSit.aM(self.mdNBN00)
-		self.sysSit.aM(self.mdBBN00)
-		self.sysSit.aM(self.mdNNN00)
-		self.sysSit.aM(self.mdNBV01)
-		self.sysSit.aM(self.mdBNB01)
-		self.sysSit.aM(self.mdBBB01)
-		self.sysSit.aM(self.mdBNN01)
-		self.sysSit.aM(self.mdNBB01)
-		self.sysSit.aM(self.mdNNB01)
-		self.sysSit.aM(self.mdVBN01)
-		self.sysSit.aM(self.mdBBN01)
-		self.sysSit.aM(self.mdNNN01)
-		self.sysSit.aM(self.mdNBN01)
-		self.sysSit.aM(self.mdBBB02)
-		self.sysSit.aM(self.mdBBN02)
-		self.sysSit.aM(self.mdBNB02)
-		self.sysSit.aM(self.mdBNN02)
-		self.sysSit.aM(self.mdNBB02)
-		self.sysSit.aM(self.mdNBN02)
-		self.sysSit.aM(self.mdNBV02)
-		self.sysSit.aM(self.mdNNB02)
-		self.sysSit.aM(self.mdNNN02)
-		self.sysSit.aM(self.mdVBN02)
-		self.sysSit.aM(self.mdBBB03)
-		self.sysSit.aM(self.mdBBN03)
-		self.sysSit.aM(self.mdBNB03)
-		self.sysSit.aM(self.mdBNN03)
-		self.sysSit.aM(self.mdNBB03)
-		self.sysSit.aM(self.mdNBN03)
-		self.sysSit.aM(self.mdNBV03)
-		self.sysSit.aM(self.mdNNB03)
-		self.sysSit.aM(self.mdNNN03)
-		self.sysSit.aM(self.mdVBN03)
-		self.sysSit.aM(self.mdBBB04)
-		self.sysSit.aM(self.mdBBN04)
-		self.sysSit.aM(self.mdBNB04)
-		self.sysSit.aM(self.mdBNN04)
-		self.sysSit.aM(self.mdNBB04)
-		self.sysSit.aM(self.mdNBN04)
-		self.sysSit.aM(self.mdNBV04)
-		self.sysSit.aM(self.mdNNB04)
-		self.sysSit.aM(self.mdNNN04)
-		self.sysSit.aM(self.mdVBN04)
-		self.sysSit.aM(self.mdBBB05)
-		self.sysSit.aM(self.mdBBN05)
-		self.sysSit.aM(self.mdBNB05)
-		self.sysSit.aM(self.mdBNN05)
-		self.sysSit.aM(self.mdNBB05)
-		self.sysSit.aM(self.mdNBN05)
-		self.sysSit.aM(self.mdNNB05)
-		self.sysSit.aM(self.mdNNN05)
-		self.sysSit.aM(self.mdVBN06)
-		self.sysSit.aM(self.mdNBB06)
-		self.sysSit.aM(self.mdBNB06)
-		self.sysSit.aM(self.mdNBN06)
-		self.sysSit.aM(self.mdNNN06)
-		self.sysSit.aM(self.mdBNN06)
-		self.sysSit.aM(self.mdBBN06)
-		self.sysSit.aM(self.mdBBB06)
-		self.sysSit.aM(self.mdNBV06)
-		self.sysSit.aM(self.mdNNB06)
-		self.sysSit.aM(self.mdBBB07)
-		self.sysSit.aM(self.mdBBN07)
-		self.sysSit.aM(self.mdBNB07)
-		self.sysSit.aM(self.mdBNN07)
-		self.sysSit.aM(self.mdNBB07)
-		self.sysSit.aM(self.mdNBN07)
-		self.sysSit.aM(self.mdNBV07)
-		self.sysSit.aM(self.mdNNB07)
-		self.sysSit.aM(self.mdNNN07)
-		self.sysSit.aM(self.mdVBN07)
-		self.sysSit.aM(self.mdVVB07)
-		self.sysSit.aM(self.mdVVV07)
-		self.sysSit.aM(self.mdVVV08)
-		self.sysSit.aM(self.mdVBN08)
-		self.sysSit.aM(self.mdVVB08)
-		self.sysSit.aSS(self.sysDecMov)
-		self.sysDecMov.aM(self.mdDecMvUNK)
-		self.sysDecMov.aM(self.mdDecMvFw)
-		self.sysDecMov.aM(self.mdCompIzq)
-		self.sysDecMov.aM(self.mdCompDer)
-		self.sysDecMov.aM(self.mdGirarDer)
-		self.sysDecMov.aM(self.mdGirarIzq)
-		self.sysDecMov.aM(self.mdStp)
-		self.sysDecMov.addParam(self.prRdDer)
-		self.prRdDer.aV(self.vlRdDer_UNK)
-		self.prRdDer.aM(self.mdRdDerUNK)
-		self.mdRdDerUNK.aV(self.vlRdDer_UNK)
-		self.mdDecMvUNK.aSM(self.mdRdDerUNK)
-		self.prRdDer.aM(self.mdStp)
-		self.prRdDer.aM(self.mdRdDerFw)
-		self.prRdDer.aM(self.mdRdDerBw)
-		self.prRdDer.aV(self.vlRdDer_Stp)
-		self.prRdDer.aV(self.vlRdDer_Fw)
-		self.prRdDer.aV(self.vlRdDer_Bw)
-		self.sysDecMov.addParam(self.prRdIzq)
-		self.prRdIzq.aV(self.vlRdIzq_UNK)
-		self.prRdIzq.aM(self.mdRdIzqUNK)
-		self.mdRdIzqUNK.aV(self.vlRdIzq_UNK)
-		self.mdDecMvUNK.aSM(self.mdRdIzqUNK)
-		self.prRdIzq.aM(self.mdStp)
-		self.prRdIzq.aM(self.mdRdIzqFw)
-		self.prRdIzq.aM(self.mdRdIzqBw)
-		self.prRdIzq.aV(self.vlRdIzq_Stp)
-		self.prRdIzq.aV(self.vlRdIzq_Fw)
-		self.prRdIzq.aV(self.vlRdIzq_Bw)
-		self.sysSit.aSS(self.sysNext)
-		self.sysNext.aM(self.mdNextUNK)
-		self.sysNext.aM(self.mdNextSi)
-		self.sysSit.aSS(self.sysDecSeg)
-		self.sysDecSeg.aM(self.mdDecSegUNK)
-		self.sysDecSeg.aM(self.mdDecSegBNB)
-		self.sysDecSeg.aM(self.mdDecSegVVB)
-		self.sysTr.aSS(self.sysDecAp)
-		self.sysDecAp.aM(self.mdDecApUNK)
-		self.sysDecAp.aM(self.mdDecApAbi)
-		self.sysDecAp.aM(self.mdDecApMedio)
-		self.sysDecAp.aM(self.mdDecApCerr)
-		self.mdMisionNormal.aSM(self.mdP00)
-		self.mdMisionNormal.aSM(self.mdP01)
-		self.mdMisionNormal.aSM(self.mdP02)
-		self.mdMisionNormal.aSM(self.mdP03)
-		self.mdMisionNormal.aSM(self.mdP04)
-		self.mdMisionNormal.aSM(self.mdP05)
-		self.mdMisionNormal.aSM(self.mdP06)
-		self.mdMisionNormal.aSM(self.mdP07)
-		self.mdMisionNormal.aSM(self.mdP08)
-		self.mdP00.aSM(self.mdNNB00)
-		self.mdP00.aSM(self.mdBBB00)
-		self.mdP00.aSM(self.mdBNB00)
-		self.mdP00.aSM(self.mdNNN00)
-		self.mdP00.aSM(self.mdBNN00)
-		self.mdP00.aSM(self.mdBBN00)
-		self.mdP00.aSM(self.mdNBB00)
-		self.mdP00.aSM(self.mdNBN00)
-		self.mdP01.aSM(self.mdNNB01)
-		self.mdP01.aSM(self.mdBBB01)
-		self.mdP01.aSM(self.mdBNB01)
-		self.mdP01.aSM(self.mdNNN01)
-		self.mdP01.aSM(self.mdBNN01)
-		self.mdP01.aSM(self.mdBBN01)
-		self.mdP01.aSM(self.mdNBB01)
-		self.mdP01.aSM(self.mdNBN01)
-		self.mdP01.aSM(self.mdVBN01)
-		self.mdP01.aSM(self.mdNBV01)
-		self.mdP02.aSM(self.mdNNB02)
-		self.mdP02.aSM(self.mdBBB02)
-		self.mdP02.aSM(self.mdBNB02)
-		self.mdP02.aSM(self.mdNNN02)
-		self.mdP02.aSM(self.mdBNN02)
-		self.mdP02.aSM(self.mdBBN02)
-		self.mdP02.aSM(self.mdNBB02)
-		self.mdP02.aSM(self.mdNBN02)
-		self.mdP02.aSM(self.mdNBV02)
-		self.mdP02.aSM(self.mdVBN02)
-		self.mdP03.aSM(self.mdBNN03)
-		self.mdP03.aSM(self.mdBBB03)
-		self.mdP03.aSM(self.mdBNB03)
-		self.mdP03.aSM(self.mdNNN03)
-		self.mdP03.aSM(self.mdNNB03)
-		self.mdP03.aSM(self.mdBBN03)
-		self.mdP03.aSM(self.mdNBB03)
-		self.mdP03.aSM(self.mdNBN03)
-		self.mdP03.aSM(self.mdNBV03)
-		self.mdP03.aSM(self.mdVBN03)
-		self.mdP04.aSM(self.mdBNN04)
-		self.mdP04.aSM(self.mdBBB04)
-		self.mdP04.aSM(self.mdBNB04)
-		self.mdP04.aSM(self.mdNNN04)
-		self.mdP04.aSM(self.mdNNB04)
-		self.mdP04.aSM(self.mdBBN04)
-		self.mdP04.aSM(self.mdNBB04)
-		self.mdP04.aSM(self.mdNBN04)
-		self.mdP04.aSM(self.mdNBV04)
-		self.mdP04.aSM(self.mdVBN04)
-		self.mdP05.aSM(self.mdBNN05)
-		self.mdP05.aSM(self.mdBBB05)
-		self.mdP05.aSM(self.mdBNB05)
-		self.mdP05.aSM(self.mdNNN05)
-		self.mdP05.aSM(self.mdNNB05)
-		self.mdP05.aSM(self.mdBBN05)
-		self.mdP05.aSM(self.mdNBB05)
-		self.mdP05.aSM(self.mdNBN05)
-		self.mdP06.aSM(self.mdBNN06)
-		self.mdP06.aSM(self.mdBBB06)
-		self.mdP06.aSM(self.mdBNB06)
-		self.mdP06.aSM(self.mdNNN06)
-		self.mdP06.aSM(self.mdNNB06)
-		self.mdP06.aSM(self.mdBBN06)
-		self.mdP06.aSM(self.mdNBB06)
-		self.mdP06.aSM(self.mdNBN06)
-		self.mdP06.aSM(self.mdNBV06)
-		self.mdP07.aSM(self.mdBNN07)
-		self.mdP07.aSM(self.mdBBB07)
-		self.mdP07.aSM(self.mdBNB07)
-		self.mdP07.aSM(self.mdNNN07)
-		self.mdP07.aSM(self.mdNNB07)
-		self.mdP07.aSM(self.mdBBN07)
-		self.mdP07.aSM(self.mdNBB07)
-		self.mdP07.aSM(self.mdNBN07)
-		self.mdP07.aSM(self.mdVBN07)
-		self.mdP07.aSM(self.mdVVB07)
-		self.mdP07.aSM(self.mdVVV07)
-		self.mdP07.aSM(self.mdNBV07)
-		self.mdP08.aSM(self.mdVBN08)
-		self.mdP08.aSM(self.mdVVB08)
-		self.mdP08.aSM(self.mdVVV08)
-		self.mdBNN00.aSM(self.mdCompDer)
-		self.mdNBB00.aSM(self.mdCompIzq)
-		self.mdBBB00.aSM(self.mdDecMvFw)
-		self.mdNNB00.aSM(self.mdCompIzq)
-		self.mdBNB00.aSM(self.mdDecMvFw)
-		self.mdNBN00.aSM(self.mdDecMvFw)
-		self.mdBBN00.aSM(self.mdCompDer)
-		self.mdNNN00.aSM(self.mdDecMvFw)
-		self.mdNBV01.aSM(self.mdGirarIzq)
-		self.mdBNB01.aSM(self.mdDecMvFw)
-		self.mdBBB01.aSM(self.mdStp)
-		self.mdBNN01.aSM(self.mdGirarDer)
-		self.mdNBB01.aSM(self.mdCompIzq)
-		self.mdNNB01.aSM(self.mdCompIzq)
-		self.mdVBN01.aSM(self.mdGirarDer)
-		self.mdBBN01.aSM(self.mdCompDer)
-		self.mdNNN01.aSM(self.mdGirarDer)
-		self.mdNBN01.aSM(self.mdStp)
-		self.mdBBB02.aSM(self.mdStp)
-		self.mdBBN02.aSM(self.mdCompDer)
-		self.mdBNB02.aSM(self.mdDecMvFw)
-		self.mdBNN02.aSM(self.mdGirarDer)
-		self.mdNBB02.aSM(self.mdCompIzq)
-		self.mdNBN02.aSM(self.mdDecMvFw)
-		self.mdNBV02.aSM(self.mdGirarIzq)
-		self.mdNNB02.aSM(self.mdCompIzq)
-		self.mdNNN02.aSM(self.mdGirarDer)
-		self.mdVBN02.aSM(self.mdGirarDer)
-		self.mdBBB03.aSM(self.mdStp)
-		self.mdBBN03.aSM(self.mdCompDer)
-		self.mdBNB03.aSM(self.mdDecMvFw)
-		self.mdBNN03.aSM(self.mdCompDer)
-		self.mdNBB03.aSM(self.mdCompIzq)
-		self.mdNBN03.aSM(self.mdStp)
-		self.mdNBV03.aSM(self.mdGirarIzq)
-		self.mdNNB03.aSM(self.mdGirarIzq)
-		self.mdNNN03.aSM(self.mdGirarIzq)
-		self.mdVBN03.aSM(self.mdGirarDer)
-		self.mdBBB04.aSM(self.mdCompDer)
-		self.mdBBN04.aSM(self.mdCompDer)
-		self.mdBNB04.aSM(self.mdDecMvFw)
-		self.mdBNN04.aSM(self.mdCompDer)
-		self.mdNBB04.aSM(self.mdCompIzq)
-		self.mdNBN04.aSM(self.mdStp)
-		self.mdNBV04.aSM(self.mdGirarIzq)
-		self.mdNNB04.aSM(self.mdDecMvFw)
-		self.mdNNN04.aSM(self.mdCompDer)
-		self.mdVBN04.aSM(self.mdGirarDer)
-		self.mdBBB05.aSM(self.mdStp)
-		self.mdBBN05.aSM(self.mdCompDer)
-		self.mdBNB05.aSM(self.mdDecMvFw)
-		self.mdBNN05.aSM(self.mdCompDer)
-		self.mdNBB05.aSM(self.mdCompIzq)
-		self.mdNBN05.aSM(self.mdCompDer)
-		self.mdNNB05.aSM(self.mdDecMvFw)
-		self.mdNNN05.aSM(self.mdCompDer)
-		self.mdVBN06.aSM(self.mdGirarDer)
-		self.mdNBB06.aSM(self.mdCompIzq)
-		self.mdBNB06.aSM(self.mdDecMvFw)
-		self.mdNBN06.aSM(self.mdStp)
-		self.mdNNN06.aSM(self.mdGirarDer)
-		self.mdBNN06.aSM(self.mdCompDer)
-		self.mdBBN06.aSM(self.mdCompDer)
-		self.mdBBB06.aSM(self.mdStp)
-		self.mdNBV06.aSM(self.mdGirarIzq)
-		self.mdNNB06.aSM(self.mdGirarDer)
-		self.mdBBB07.aSM(self.mdGirarDer)
-		self.mdBBN07.aSM(self.mdGirarDer)
-		self.mdBNB07.aSM(self.mdGirarIzq)
-		self.mdBNN07.aSM(self.mdGirarIzq)
-		self.mdNBB07.aSM(self.mdGirarDer)
-		self.mdNBN07.aSM(self.mdGirarDer)
-		self.mdNBV07.aSM(self.mdStp)
-		self.mdNNB07.aSM(self.mdGirarDer)
-		self.mdNNN07.aSM(self.mdGirarDer)
-		self.mdVBN07.aSM(self.mdCompIzq)
-		self.mdVVB07.aSM(self.mdDecMvFw)
-		self.mdVVV07.aSM(self.mdGirarDer)
-		self.mdVVV08.aSM(self.mdGirarDer)
-		self.mdVBN08.aSM(self.mdCompIzq)
-		self.mdVVB08.aSM(self.mdDecMvFw)
-		self.mdDecMvFw.aSM(self.mdRdDerFw)
-		self.mdCompIzq.aSM(self.mdRdDerFw)
-		self.mdCompDer.aSM(self.mdRdDerStp)
-		self.mdGirarDer.aSM(self.mdRdDerBw)
-		self.mdGirarIzq.aSM(self.mdRdDerFw)
-		self.mdStp.aSM(self.mdRdDerStp)
-		self.mdRdDerStp.aV(self.vlRdDer_Stp)
-		self.mdRdDerFw.aV(self.vlRdDer_Fw)
-		self.mdRdDerBw.aV(self.vlRdDer_Bw)
-		self.mdDecMvFw.aSM(self.mdRdIzqFw)
-		self.mdCompIzq.aSM(self.mdRdIzqStp)
-		self.mdCompDer.aSM(self.mdRdIzqFw)
-		self.mdGirarDer.aSM(self.mdRdIzqFw)
-		self.mdGirarIzq.aSM(self.mdRdIzqBw)
-		self.mdStp.aSM(self.mdRdIzqStp)
-		self.mdRdIzqStp.aV(self.vlRdIzq_Stp)
-		self.mdRdIzqFw.aV(self.vlRdIzq_Fw)
-		self.mdRdIzqBw.aV(self.vlRdIzq_Bw)
-		self.mdBNB00.aSM(self.mdNextSi)
-		self.mdBNN01.aSM(self.mdNextSi)
-		self.mdNNN01.aSM(self.mdNextSi)
-		self.mdBNN02.aSM(self.mdNextSi)
-		self.mdNNN02.aSM(self.mdNextSi)
-		self.mdNNB03.aSM(self.mdNextSi)
-		self.mdNNN03.aSM(self.mdNextSi)
-		self.mdNNB04.aSM(self.mdNextSi)
-		self.mdNNN04.aSM(self.mdNextSi)
-		self.mdBNB05.aSM(self.mdNextSi)
-		self.mdNNN06.aSM(self.mdNextSi)
-		self.mdNNB06.aSM(self.mdNextSi)
-		self.mdVVB07.aSM(self.mdNextSi)
-		self.mdVVV08.aSM(self.mdNextSi)
-		self.mdBNB01.aSM(self.mdDecSegBNB)
-		self.mdBNB02.aSM(self.mdDecSegBNB)
-		self.mdBNB03.aSM(self.mdDecSegBNB)
-		self.mdBNB04.aSM(self.mdDecSegBNB)
-		self.mdBNB05.aSM(self.mdDecSegBNB)
-		self.mdBNB06.aSM(self.mdDecSegBNB)
-		self.mdVVB07.aSM(self.mdDecSegVVB)
-		self.mdVVB08.aSM(self.mdDecSegVVB)
-		self.mdP00.aSM(self.mdDecApCerr)
-		self.mdP01.aSM(self.mdDecApCerr)
-		self.mdP02.aSM(self.mdDecApAbi)
-		self.mdP03.aSM(self.mdDecApAbi)
-		self.mdP04.aSM(self.mdDecApAbi)
-		self.mdP05.aSM(self.mdDecApAbi)
-		self.mdP06.aSM(self.mdDecApAbi)
-		self.mdP07.aSM(self.mdDecApAbi)
-		self.mdP08.aSM(self.mdDecApAbi)
+		self.mdMisionNormal = PORISMode("Normal")
+		self.sysTramo = PORISSys("Tramo")
+		self.mdTramoUNKNOWN = PORISMode("UNKNOWN")
+		self.mdTramoP00_SituarBNB_finBNB_Avanzar = PORISMode("P00_SituarBNB_finBNB_Avanzar")
+		self.mdTramoP01_SeguirBNB_finder_giroder_abrir = PORISMode("P01_SeguirBNB_finder_giroder_abrir")
+		self.mdTramoP02_SeguirBNB_finder_giroder = PORISMode("P02_SeguirBNB_finder_giroder")
+		self.mdTramoP03_SeguirBNB_finizq_giroizq = PORISMode("P03_SeguirBNB_finizq_giroizq")
+		self.mdTramoP04_SeguirBNB_fincruce_rect = PORISMode("P04_SeguirBNB_fincruce_rect")
+		self.mdTramoP05_SeguirNNB_finBNB_rect = PORISMode("P05_SeguirNNB_finBNB_rect")
+		self.mdTramoP06_SeguirBNB_finizq_giroder = PORISMode("P06_SeguirBNB_finizq_giroder")
+		self.mdTramoP07_SituarVVB_finVVB_Avanzar = PORISMode("P07_SituarVVB_finVVB_Avanzar")
+		self.mdTramoP08_SeguirVVB_finVVV_giroder = PORISMode("P08_SeguirVVB_finVVV_giroder")
+		self.sysSituacion = PORISSys("Situacion")
+		self.mdSituacionUNKNOWN = PORISMode("UNKNOWN")
+		self.mdSituacionBNN_00 = PORISMode("BNN")
+		self.mdSituacionNBB_00 = PORISMode("NBB")
+		self.mdSituacionBBB_00 = PORISMode("BBB")
+		self.mdSituacionNNB_00 = PORISMode("NNB")
+		self.mdSituacionBNB_00 = PORISMode("BNB")
+		self.mdSituacionNBN_00 = PORISMode("NBN")
+		self.mdSituacionBBN_00 = PORISMode("BBN")
+		self.mdSituacionNNN_00 = PORISMode("NNN")
+		self.mdSituacionNBV_01 = PORISMode("NBV")
+		self.mdSituacionBNB_01 = PORISMode("BNB")
+		self.mdSituacionBBB_01 = PORISMode("BBB")
+		self.mdSituacionBNN_01 = PORISMode("BNN")
+		self.mdSituacionNBB_01 = PORISMode("NBB")
+		self.mdSituacionNNB_01 = PORISMode("NNB")
+		self.mdSituacionVBN_01 = PORISMode("VBN")
+		self.mdSituacionBBN_01 = PORISMode("BBN")
+		self.mdSituacionNNN_01 = PORISMode("NNN")
+		self.mdSituacionNBN_01 = PORISMode("NBN")
+		self.mdSituacionBBB_02 = PORISMode("BBB")
+		self.mdSituacionBBN_02 = PORISMode("BBN")
+		self.mdSituacionBNB_02 = PORISMode("BNB")
+		self.mdSituacionBNN_02 = PORISMode("BNN")
+		self.mdSituacionNBB_02 = PORISMode("NBB")
+		self.mdSituacionNBN_02 = PORISMode("NBN")
+		self.mdSituacionNBV_02 = PORISMode("NBV")
+		self.mdSituacionNNB_02 = PORISMode("NNB")
+		self.mdSituacionNNN_02 = PORISMode("NNN")
+		self.mdSituacionVBN_02 = PORISMode("VBN")
+		self.mdSituacionBBB_03 = PORISMode("BBB")
+		self.mdSituacionBBN_03 = PORISMode("BBN")
+		self.mdSituacionBNB_03 = PORISMode("BNB")
+		self.mdSituacionBNN_03 = PORISMode("BNN")
+		self.mdSituacionNBB_03 = PORISMode("NBB")
+		self.mdSituacionNBN_03 = PORISMode("NBN")
+		self.mdSituacionNBV_03 = PORISMode("NBV")
+		self.mdSituacionNNB_03 = PORISMode("NNB")
+		self.mdSituacionNNN_03 = PORISMode("NNN")
+		self.mdSituacionVBN_03 = PORISMode("VBN")
+		self.mdSituacionBBB_04 = PORISMode("BBB")
+		self.mdSituacionBBN_04 = PORISMode("BBN")
+		self.mdSituacionBNB_04 = PORISMode("BNB")
+		self.mdSituacionBNN_04 = PORISMode("BNN")
+		self.mdSituacionNBB_04 = PORISMode("NBB")
+		self.mdSituacionNBN_04 = PORISMode("NBN")
+		self.mdSituacionNBV_04 = PORISMode("NBV")
+		self.mdSituacionNNB_04 = PORISMode("NNB")
+		self.mdSituacionNNN_04 = PORISMode("NNN")
+		self.mdSituacionVBN_04 = PORISMode("VBN")
+		self.mdSituacionBBB_05 = PORISMode("BBB")
+		self.mdSituacionBBN_05 = PORISMode("BBN")
+		self.mdSituacionBNB_05 = PORISMode("BNB")
+		self.mdSituacionBNN_05 = PORISMode("BNN")
+		self.mdSituacionNBB_05 = PORISMode("NBB")
+		self.mdSituacionNBN_05 = PORISMode("NBN")
+		self.mdSituacionNNB_05 = PORISMode("NNB")
+		self.mdSituacionNNN_05 = PORISMode("NNN")
+		self.mdSituacionVBN_06 = PORISMode("VBN")
+		self.mdSituacionNBB_06 = PORISMode("NBB")
+		self.mdSituacionBNB_06 = PORISMode("BNB")
+		self.mdSituacionNBN_06 = PORISMode("NBN")
+		self.mdSituacionNNN_06 = PORISMode("NNN")
+		self.mdSituacionBNN_06 = PORISMode("BNN")
+		self.mdSituacionBBN_06 = PORISMode("BBN")
+		self.mdSituacionBBB_06 = PORISMode("BBB")
+		self.mdSituacionNBV_06 = PORISMode("NBV")
+		self.mdSituacionNNB_06 = PORISMode("NNB")
+		self.mdSituacionBBB_07 = PORISMode("BBB")
+		self.mdSituacionBBN_07 = PORISMode("BBN")
+		self.mdSituacionBNB_07 = PORISMode("BNB")
+		self.mdSituacionBNN_07 = PORISMode("BNN")
+		self.mdSituacionNBB_07 = PORISMode("NBB")
+		self.mdSituacionNBN_07 = PORISMode("NBN")
+		self.mdSituacionNBV_07 = PORISMode("NBV")
+		self.mdSituacionNNB_07 = PORISMode("NNB")
+		self.mdSituacionNNN_07 = PORISMode("NNN")
+		self.mdSituacionVBN_07 = PORISMode("VBN")
+		self.mdSituacionVVB_07 = PORISMode("VVB")
+		self.mdSituacionVVV_07 = PORISMode("VVV")
+		self.mdSituacionVVV_08 = PORISMode("VVV")
+		self.mdSituacionVBN_08 = PORISMode("VBN")
+		self.mdSituacionVVB_08 = PORISMode("VVB")
+		self.sysDecisionMovimiento = PORISSys("DecisionMovimiento")
+		self.mdDecisionMovimientoUNKNOWN = PORISMode("UNKNOWN")
+		self.mdDecisionMovimientoAvanzar = PORISMode("Avanzar")
+		self.mdDecisionMovimientoCompasIzq = PORISMode("CompasIzq")
+		self.mdDecisionMovimientoCompasDer = PORISMode("CompasDer")
+		self.mdDecisionMovimientoGirarDer = PORISMode("GirarDer")
+		self.mdDecisionMovimientoGirarIzq = PORISMode("GirarIzq")
+		self.mdDecisionMovimientoParar = PORISMode("Parar")
+		self.prRuedaDer = PORISParam("RuedaDer")
+		self.mdRuedaDerUNKNOWN = PORISMode("UNKNOWN")
+		self.vlRuedaDer_UNKNOWN = PORISValue("UNKNOWN")
+		self.mdRuedaDerParada = PORISMode("Parada")
+		self.mdRuedaDerAvanzar = PORISMode("Avanzar")
+		self.mdRuedaDerRetroceder = PORISMode("Retroceder")
+		self.vlRuedaDer_Quieta = PORISValue("Quieta")
+		self.vlRuedaDer_Adelante = PORISValue("Adelante")
+		self.vlRuedaDer_Atras = PORISValue("Atras")
+		self.prRuedaIzq = PORISParam("RuedaIzq")
+		self.mdRuedaIzqUNKNOWN = PORISMode("UNKNOWN")
+		self.vlRuedaIzq_UNKNOWN = PORISValue("UNKNOWN")
+		self.mdRuedaIzqParada = PORISMode("Parada")
+		self.mdRuedaIzqAvanzar = PORISMode("Avanzar")
+		self.mdRuedaIzqRetroceder = PORISMode("Retroceder")
+		self.vlRuedaIzq_Quieta = PORISValue("Quieta")
+		self.vlRuedaIzq_Adelante = PORISValue("Adelante")
+		self.vlRuedaIzq_Atras = PORISValue("Atras")
+		self.sysNuevoPaso = PORISSys("NuevoPaso")
+		self.mdNuevoPasoUNKNOWN = PORISMode("UNKNOWN")
+		self.mdNuevoPasoSi = PORISMode("Si")
+		self.sysDecisionSeguidor = PORISSys("DecisionSeguidor")
+		self.mdDecisionSeguidorUNKNOWN = PORISMode("UNKNOWN")
+		self.mdDecisionSeguidorBNB = PORISMode("BNB")
+		self.mdDecisionSeguidorVVB = PORISMode("VVB")
+		self.sysDecisionAparejo = PORISSys("DecisionAparejo")
+		self.mdDecisionAparejoUNKNOWN = PORISMode("UNKNOWN")
+		self.mdDecisionAparejoAbierto = PORISMode("Abierto")
+		self.mdDecisionAparejoMedio = PORISMode("Medio")
+		self.mdDecisionAparejoCerrado = PORISMode("Cerrado")
+		self.sysMision.addMode(self.mdMisionUNKNOWN)
+		self.sysMision.addMode(self.mdMisionNormal)
+		self.sysMision.addSubsystem(self.sysTramo)
+		self.sysTramo.addMode(self.mdTramoUNKNOWN)
+		self.sysTramo.addMode(self.mdTramoP00_SituarBNB_finBNB_Avanzar)
+		self.sysTramo.addMode(self.mdTramoP01_SeguirBNB_finder_giroder_abrir)
+		self.sysTramo.addMode(self.mdTramoP02_SeguirBNB_finder_giroder)
+		self.sysTramo.addMode(self.mdTramoP03_SeguirBNB_finizq_giroizq)
+		self.sysTramo.addMode(self.mdTramoP04_SeguirBNB_fincruce_rect)
+		self.sysTramo.addMode(self.mdTramoP05_SeguirNNB_finBNB_rect)
+		self.sysTramo.addMode(self.mdTramoP06_SeguirBNB_finizq_giroder)
+		self.sysTramo.addMode(self.mdTramoP07_SituarVVB_finVVB_Avanzar)
+		self.sysTramo.addMode(self.mdTramoP08_SeguirVVB_finVVV_giroder)
+		self.sysTramo.addSubsystem(self.sysSituacion)
+		self.sysSituacion.addMode(self.mdSituacionUNKNOWN)
+		self.sysSituacion.addMode(self.mdSituacionBNN_00)
+		self.sysSituacion.addMode(self.mdSituacionNBB_00)
+		self.sysSituacion.addMode(self.mdSituacionBBB_00)
+		self.sysSituacion.addMode(self.mdSituacionNNB_00)
+		self.sysSituacion.addMode(self.mdSituacionBNB_00)
+		self.sysSituacion.addMode(self.mdSituacionNBN_00)
+		self.sysSituacion.addMode(self.mdSituacionBBN_00)
+		self.sysSituacion.addMode(self.mdSituacionNNN_00)
+		self.sysSituacion.addMode(self.mdSituacionNBV_01)
+		self.sysSituacion.addMode(self.mdSituacionBNB_01)
+		self.sysSituacion.addMode(self.mdSituacionBBB_01)
+		self.sysSituacion.addMode(self.mdSituacionBNN_01)
+		self.sysSituacion.addMode(self.mdSituacionNBB_01)
+		self.sysSituacion.addMode(self.mdSituacionNNB_01)
+		self.sysSituacion.addMode(self.mdSituacionVBN_01)
+		self.sysSituacion.addMode(self.mdSituacionBBN_01)
+		self.sysSituacion.addMode(self.mdSituacionNNN_01)
+		self.sysSituacion.addMode(self.mdSituacionNBN_01)
+		self.sysSituacion.addMode(self.mdSituacionBBB_02)
+		self.sysSituacion.addMode(self.mdSituacionBBN_02)
+		self.sysSituacion.addMode(self.mdSituacionBNB_02)
+		self.sysSituacion.addMode(self.mdSituacionBNN_02)
+		self.sysSituacion.addMode(self.mdSituacionNBB_02)
+		self.sysSituacion.addMode(self.mdSituacionNBN_02)
+		self.sysSituacion.addMode(self.mdSituacionNBV_02)
+		self.sysSituacion.addMode(self.mdSituacionNNB_02)
+		self.sysSituacion.addMode(self.mdSituacionNNN_02)
+		self.sysSituacion.addMode(self.mdSituacionVBN_02)
+		self.sysSituacion.addMode(self.mdSituacionBBB_03)
+		self.sysSituacion.addMode(self.mdSituacionBBN_03)
+		self.sysSituacion.addMode(self.mdSituacionBNB_03)
+		self.sysSituacion.addMode(self.mdSituacionBNN_03)
+		self.sysSituacion.addMode(self.mdSituacionNBB_03)
+		self.sysSituacion.addMode(self.mdSituacionNBN_03)
+		self.sysSituacion.addMode(self.mdSituacionNBV_03)
+		self.sysSituacion.addMode(self.mdSituacionNNB_03)
+		self.sysSituacion.addMode(self.mdSituacionNNN_03)
+		self.sysSituacion.addMode(self.mdSituacionVBN_03)
+		self.sysSituacion.addMode(self.mdSituacionBBB_04)
+		self.sysSituacion.addMode(self.mdSituacionBBN_04)
+		self.sysSituacion.addMode(self.mdSituacionBNB_04)
+		self.sysSituacion.addMode(self.mdSituacionBNN_04)
+		self.sysSituacion.addMode(self.mdSituacionNBB_04)
+		self.sysSituacion.addMode(self.mdSituacionNBN_04)
+		self.sysSituacion.addMode(self.mdSituacionNBV_04)
+		self.sysSituacion.addMode(self.mdSituacionNNB_04)
+		self.sysSituacion.addMode(self.mdSituacionNNN_04)
+		self.sysSituacion.addMode(self.mdSituacionVBN_04)
+		self.sysSituacion.addMode(self.mdSituacionBBB_05)
+		self.sysSituacion.addMode(self.mdSituacionBBN_05)
+		self.sysSituacion.addMode(self.mdSituacionBNB_05)
+		self.sysSituacion.addMode(self.mdSituacionBNN_05)
+		self.sysSituacion.addMode(self.mdSituacionNBB_05)
+		self.sysSituacion.addMode(self.mdSituacionNBN_05)
+		self.sysSituacion.addMode(self.mdSituacionNNB_05)
+		self.sysSituacion.addMode(self.mdSituacionNNN_05)
+		self.sysSituacion.addMode(self.mdSituacionVBN_06)
+		self.sysSituacion.addMode(self.mdSituacionNBB_06)
+		self.sysSituacion.addMode(self.mdSituacionBNB_06)
+		self.sysSituacion.addMode(self.mdSituacionNBN_06)
+		self.sysSituacion.addMode(self.mdSituacionNNN_06)
+		self.sysSituacion.addMode(self.mdSituacionBNN_06)
+		self.sysSituacion.addMode(self.mdSituacionBBN_06)
+		self.sysSituacion.addMode(self.mdSituacionBBB_06)
+		self.sysSituacion.addMode(self.mdSituacionNBV_06)
+		self.sysSituacion.addMode(self.mdSituacionNNB_06)
+		self.sysSituacion.addMode(self.mdSituacionBBB_07)
+		self.sysSituacion.addMode(self.mdSituacionBBN_07)
+		self.sysSituacion.addMode(self.mdSituacionBNB_07)
+		self.sysSituacion.addMode(self.mdSituacionBNN_07)
+		self.sysSituacion.addMode(self.mdSituacionNBB_07)
+		self.sysSituacion.addMode(self.mdSituacionNBN_07)
+		self.sysSituacion.addMode(self.mdSituacionNBV_07)
+		self.sysSituacion.addMode(self.mdSituacionNNB_07)
+		self.sysSituacion.addMode(self.mdSituacionNNN_07)
+		self.sysSituacion.addMode(self.mdSituacionVBN_07)
+		self.sysSituacion.addMode(self.mdSituacionVVB_07)
+		self.sysSituacion.addMode(self.mdSituacionVVV_07)
+		self.sysSituacion.addMode(self.mdSituacionVVV_08)
+		self.sysSituacion.addMode(self.mdSituacionVBN_08)
+		self.sysSituacion.addMode(self.mdSituacionVVB_08)
+		self.sysSituacion.addSubsystem(self.sysDecisionMovimiento)
+		self.sysDecisionMovimiento.addMode(self.mdDecisionMovimientoUNKNOWN)
+		self.sysDecisionMovimiento.addMode(self.mdDecisionMovimientoAvanzar)
+		self.sysDecisionMovimiento.addMode(self.mdDecisionMovimientoCompasIzq)
+		self.sysDecisionMovimiento.addMode(self.mdDecisionMovimientoCompasDer)
+		self.sysDecisionMovimiento.addMode(self.mdDecisionMovimientoGirarDer)
+		self.sysDecisionMovimiento.addMode(self.mdDecisionMovimientoGirarIzq)
+		self.sysDecisionMovimiento.addMode(self.mdDecisionMovimientoParar)
+		self.sysDecisionMovimiento.addParam(self.prRuedaDer)
+		self.prRuedaDer.addValue(self.vlRuedaDer_UNKNOWN)
+		self.prRuedaDer.addMode(self.mdRuedaDerUNKNOWN)
+		self.mdRuedaDerUNKNOWN.addValue(self.vlRuedaDer_UNKNOWN)
+		self.mdDecisionMovimientoUNKNOWN.addSubMode(self.mdRuedaDerUNKNOWN)
+		self.prRuedaDer.addMode(self.mdRuedaDerParada)
+		self.prRuedaDer.addMode(self.mdRuedaDerAvanzar)
+		self.prRuedaDer.addMode(self.mdRuedaDerRetroceder)
+		self.prRuedaDer.addValue(self.vlRuedaDer_Quieta)
+		self.prRuedaDer.addValue(self.vlRuedaDer_Adelante)
+		self.prRuedaDer.addValue(self.vlRuedaDer_Atras)
+		self.sysDecisionMovimiento.addParam(self.prRuedaIzq)
+		self.prRuedaIzq.addValue(self.vlRuedaIzq_UNKNOWN)
+		self.prRuedaIzq.addMode(self.mdRuedaIzqUNKNOWN)
+		self.mdRuedaIzqUNKNOWN.addValue(self.vlRuedaIzq_UNKNOWN)
+		self.mdDecisionMovimientoUNKNOWN.addSubMode(self.mdRuedaIzqUNKNOWN)
+		self.prRuedaIzq.addMode(self.mdRuedaIzqParada)
+		self.prRuedaIzq.addMode(self.mdRuedaIzqAvanzar)
+		self.prRuedaIzq.addMode(self.mdRuedaIzqRetroceder)
+		self.prRuedaIzq.addValue(self.vlRuedaIzq_Quieta)
+		self.prRuedaIzq.addValue(self.vlRuedaIzq_Adelante)
+		self.prRuedaIzq.addValue(self.vlRuedaIzq_Atras)
+		self.sysSituacion.addSubsystem(self.sysNuevoPaso)
+		self.sysNuevoPaso.addMode(self.mdNuevoPasoUNKNOWN)
+		self.sysNuevoPaso.addMode(self.mdNuevoPasoSi)
+		self.sysSituacion.addSubsystem(self.sysDecisionSeguidor)
+		self.sysDecisionSeguidor.addMode(self.mdDecisionSeguidorUNKNOWN)
+		self.sysDecisionSeguidor.addMode(self.mdDecisionSeguidorBNB)
+		self.sysDecisionSeguidor.addMode(self.mdDecisionSeguidorVVB)
+		self.sysTramo.addSubsystem(self.sysDecisionAparejo)
+		self.sysDecisionAparejo.addMode(self.mdDecisionAparejoUNKNOWN)
+		self.sysDecisionAparejo.addMode(self.mdDecisionAparejoAbierto)
+		self.sysDecisionAparejo.addMode(self.mdDecisionAparejoMedio)
+		self.sysDecisionAparejo.addMode(self.mdDecisionAparejoCerrado)
+		self.mdMisionNormal.addSubMode(self.mdTramoP00_SituarBNB_finBNB_Avanzar)
+		self.mdMisionNormal.addSubMode(self.mdTramoP01_SeguirBNB_finder_giroder_abrir)
+		self.mdMisionNormal.addSubMode(self.mdTramoP02_SeguirBNB_finder_giroder)
+		self.mdMisionNormal.addSubMode(self.mdTramoP03_SeguirBNB_finizq_giroizq)
+		self.mdMisionNormal.addSubMode(self.mdTramoP04_SeguirBNB_fincruce_rect)
+		self.mdMisionNormal.addSubMode(self.mdTramoP05_SeguirNNB_finBNB_rect)
+		self.mdMisionNormal.addSubMode(self.mdTramoP06_SeguirBNB_finizq_giroder)
+		self.mdMisionNormal.addSubMode(self.mdTramoP07_SituarVVB_finVVB_Avanzar)
+		self.mdMisionNormal.addSubMode(self.mdTramoP08_SeguirVVB_finVVV_giroder)
+		self.mdTramoP00_SituarBNB_finBNB_Avanzar.addSubMode(self.mdSituacionNNB_00)
+		self.mdTramoP00_SituarBNB_finBNB_Avanzar.addSubMode(self.mdSituacionBBB_00)
+		self.mdTramoP00_SituarBNB_finBNB_Avanzar.addSubMode(self.mdSituacionBNB_00)
+		self.mdTramoP00_SituarBNB_finBNB_Avanzar.addSubMode(self.mdSituacionNNN_00)
+		self.mdTramoP00_SituarBNB_finBNB_Avanzar.addSubMode(self.mdSituacionBNN_00)
+		self.mdTramoP00_SituarBNB_finBNB_Avanzar.addSubMode(self.mdSituacionBBN_00)
+		self.mdTramoP00_SituarBNB_finBNB_Avanzar.addSubMode(self.mdSituacionNBB_00)
+		self.mdTramoP00_SituarBNB_finBNB_Avanzar.addSubMode(self.mdSituacionNBN_00)
+		self.mdTramoP01_SeguirBNB_finder_giroder_abrir.addSubMode(self.mdSituacionNNB_01)
+		self.mdTramoP01_SeguirBNB_finder_giroder_abrir.addSubMode(self.mdSituacionBBB_01)
+		self.mdTramoP01_SeguirBNB_finder_giroder_abrir.addSubMode(self.mdSituacionBNB_01)
+		self.mdTramoP01_SeguirBNB_finder_giroder_abrir.addSubMode(self.mdSituacionNNN_01)
+		self.mdTramoP01_SeguirBNB_finder_giroder_abrir.addSubMode(self.mdSituacionBNN_01)
+		self.mdTramoP01_SeguirBNB_finder_giroder_abrir.addSubMode(self.mdSituacionBBN_01)
+		self.mdTramoP01_SeguirBNB_finder_giroder_abrir.addSubMode(self.mdSituacionNBB_01)
+		self.mdTramoP01_SeguirBNB_finder_giroder_abrir.addSubMode(self.mdSituacionNBN_01)
+		self.mdTramoP01_SeguirBNB_finder_giroder_abrir.addSubMode(self.mdSituacionVBN_01)
+		self.mdTramoP01_SeguirBNB_finder_giroder_abrir.addSubMode(self.mdSituacionNBV_01)
+		self.mdTramoP02_SeguirBNB_finder_giroder.addSubMode(self.mdSituacionNNB_02)
+		self.mdTramoP02_SeguirBNB_finder_giroder.addSubMode(self.mdSituacionBBB_02)
+		self.mdTramoP02_SeguirBNB_finder_giroder.addSubMode(self.mdSituacionBNB_02)
+		self.mdTramoP02_SeguirBNB_finder_giroder.addSubMode(self.mdSituacionNNN_02)
+		self.mdTramoP02_SeguirBNB_finder_giroder.addSubMode(self.mdSituacionBNN_02)
+		self.mdTramoP02_SeguirBNB_finder_giroder.addSubMode(self.mdSituacionBBN_02)
+		self.mdTramoP02_SeguirBNB_finder_giroder.addSubMode(self.mdSituacionNBB_02)
+		self.mdTramoP02_SeguirBNB_finder_giroder.addSubMode(self.mdSituacionNBN_02)
+		self.mdTramoP02_SeguirBNB_finder_giroder.addSubMode(self.mdSituacionNBV_02)
+		self.mdTramoP02_SeguirBNB_finder_giroder.addSubMode(self.mdSituacionVBN_02)
+		self.mdTramoP03_SeguirBNB_finizq_giroizq.addSubMode(self.mdSituacionBNN_03)
+		self.mdTramoP03_SeguirBNB_finizq_giroizq.addSubMode(self.mdSituacionBBB_03)
+		self.mdTramoP03_SeguirBNB_finizq_giroizq.addSubMode(self.mdSituacionBNB_03)
+		self.mdTramoP03_SeguirBNB_finizq_giroizq.addSubMode(self.mdSituacionNNN_03)
+		self.mdTramoP03_SeguirBNB_finizq_giroizq.addSubMode(self.mdSituacionNNB_03)
+		self.mdTramoP03_SeguirBNB_finizq_giroizq.addSubMode(self.mdSituacionBBN_03)
+		self.mdTramoP03_SeguirBNB_finizq_giroizq.addSubMode(self.mdSituacionNBB_03)
+		self.mdTramoP03_SeguirBNB_finizq_giroizq.addSubMode(self.mdSituacionNBN_03)
+		self.mdTramoP03_SeguirBNB_finizq_giroizq.addSubMode(self.mdSituacionNBV_03)
+		self.mdTramoP03_SeguirBNB_finizq_giroizq.addSubMode(self.mdSituacionVBN_03)
+		self.mdTramoP04_SeguirBNB_fincruce_rect.addSubMode(self.mdSituacionBNN_04)
+		self.mdTramoP04_SeguirBNB_fincruce_rect.addSubMode(self.mdSituacionBBB_04)
+		self.mdTramoP04_SeguirBNB_fincruce_rect.addSubMode(self.mdSituacionBNB_04)
+		self.mdTramoP04_SeguirBNB_fincruce_rect.addSubMode(self.mdSituacionNNN_04)
+		self.mdTramoP04_SeguirBNB_fincruce_rect.addSubMode(self.mdSituacionNNB_04)
+		self.mdTramoP04_SeguirBNB_fincruce_rect.addSubMode(self.mdSituacionBBN_04)
+		self.mdTramoP04_SeguirBNB_fincruce_rect.addSubMode(self.mdSituacionNBB_04)
+		self.mdTramoP04_SeguirBNB_fincruce_rect.addSubMode(self.mdSituacionNBN_04)
+		self.mdTramoP04_SeguirBNB_fincruce_rect.addSubMode(self.mdSituacionNBV_04)
+		self.mdTramoP04_SeguirBNB_fincruce_rect.addSubMode(self.mdSituacionVBN_04)
+		self.mdTramoP05_SeguirNNB_finBNB_rect.addSubMode(self.mdSituacionBNN_05)
+		self.mdTramoP05_SeguirNNB_finBNB_rect.addSubMode(self.mdSituacionBBB_05)
+		self.mdTramoP05_SeguirNNB_finBNB_rect.addSubMode(self.mdSituacionBNB_05)
+		self.mdTramoP05_SeguirNNB_finBNB_rect.addSubMode(self.mdSituacionNNN_05)
+		self.mdTramoP05_SeguirNNB_finBNB_rect.addSubMode(self.mdSituacionNNB_05)
+		self.mdTramoP05_SeguirNNB_finBNB_rect.addSubMode(self.mdSituacionBBN_05)
+		self.mdTramoP05_SeguirNNB_finBNB_rect.addSubMode(self.mdSituacionNBB_05)
+		self.mdTramoP05_SeguirNNB_finBNB_rect.addSubMode(self.mdSituacionNBN_05)
+		self.mdTramoP06_SeguirBNB_finizq_giroder.addSubMode(self.mdSituacionBNN_06)
+		self.mdTramoP06_SeguirBNB_finizq_giroder.addSubMode(self.mdSituacionBBB_06)
+		self.mdTramoP06_SeguirBNB_finizq_giroder.addSubMode(self.mdSituacionBNB_06)
+		self.mdTramoP06_SeguirBNB_finizq_giroder.addSubMode(self.mdSituacionNNN_06)
+		self.mdTramoP06_SeguirBNB_finizq_giroder.addSubMode(self.mdSituacionNNB_06)
+		self.mdTramoP06_SeguirBNB_finizq_giroder.addSubMode(self.mdSituacionBBN_06)
+		self.mdTramoP06_SeguirBNB_finizq_giroder.addSubMode(self.mdSituacionNBB_06)
+		self.mdTramoP06_SeguirBNB_finizq_giroder.addSubMode(self.mdSituacionNBN_06)
+		self.mdTramoP06_SeguirBNB_finizq_giroder.addSubMode(self.mdSituacionNBV_06)
+		self.mdTramoP07_SituarVVB_finVVB_Avanzar.addSubMode(self.mdSituacionBNN_07)
+		self.mdTramoP07_SituarVVB_finVVB_Avanzar.addSubMode(self.mdSituacionBBB_07)
+		self.mdTramoP07_SituarVVB_finVVB_Avanzar.addSubMode(self.mdSituacionBNB_07)
+		self.mdTramoP07_SituarVVB_finVVB_Avanzar.addSubMode(self.mdSituacionNNN_07)
+		self.mdTramoP07_SituarVVB_finVVB_Avanzar.addSubMode(self.mdSituacionNNB_07)
+		self.mdTramoP07_SituarVVB_finVVB_Avanzar.addSubMode(self.mdSituacionBBN_07)
+		self.mdTramoP07_SituarVVB_finVVB_Avanzar.addSubMode(self.mdSituacionNBB_07)
+		self.mdTramoP07_SituarVVB_finVVB_Avanzar.addSubMode(self.mdSituacionNBN_07)
+		self.mdTramoP07_SituarVVB_finVVB_Avanzar.addSubMode(self.mdSituacionVBN_07)
+		self.mdTramoP07_SituarVVB_finVVB_Avanzar.addSubMode(self.mdSituacionVVB_07)
+		self.mdTramoP07_SituarVVB_finVVB_Avanzar.addSubMode(self.mdSituacionVVV_07)
+		self.mdTramoP07_SituarVVB_finVVB_Avanzar.addSubMode(self.mdSituacionNBV_07)
+		self.mdTramoP08_SeguirVVB_finVVV_giroder.addSubMode(self.mdSituacionVBN_08)
+		self.mdTramoP08_SeguirVVB_finVVV_giroder.addSubMode(self.mdSituacionVVB_08)
+		self.mdTramoP08_SeguirVVB_finVVV_giroder.addSubMode(self.mdSituacionVVV_08)
+		self.mdSituacionBNN_00.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionNBB_00.addSubMode(self.mdDecisionMovimientoCompasIzq)
+		self.mdSituacionBBB_00.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdSituacionNNB_00.addSubMode(self.mdDecisionMovimientoCompasIzq)
+		self.mdSituacionBNB_00.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdSituacionNBN_00.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdSituacionBBN_00.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionNNN_00.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdSituacionNBV_01.addSubMode(self.mdDecisionMovimientoGirarIzq)
+		self.mdSituacionBNB_01.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdSituacionBBB_01.addSubMode(self.mdDecisionMovimientoParar)
+		self.mdSituacionBNN_01.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionNBB_01.addSubMode(self.mdDecisionMovimientoCompasIzq)
+		self.mdSituacionNNB_01.addSubMode(self.mdDecisionMovimientoCompasIzq)
+		self.mdSituacionVBN_01.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionBBN_01.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionNNN_01.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionNBN_01.addSubMode(self.mdDecisionMovimientoParar)
+		self.mdSituacionBBB_02.addSubMode(self.mdDecisionMovimientoParar)
+		self.mdSituacionBBN_02.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionBNB_02.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdSituacionBNN_02.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionNBB_02.addSubMode(self.mdDecisionMovimientoCompasIzq)
+		self.mdSituacionNBN_02.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdSituacionNBV_02.addSubMode(self.mdDecisionMovimientoGirarIzq)
+		self.mdSituacionNNB_02.addSubMode(self.mdDecisionMovimientoCompasIzq)
+		self.mdSituacionNNN_02.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionVBN_02.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionBBB_03.addSubMode(self.mdDecisionMovimientoParar)
+		self.mdSituacionBBN_03.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionBNB_03.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdSituacionBNN_03.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionNBB_03.addSubMode(self.mdDecisionMovimientoCompasIzq)
+		self.mdSituacionNBN_03.addSubMode(self.mdDecisionMovimientoParar)
+		self.mdSituacionNBV_03.addSubMode(self.mdDecisionMovimientoGirarIzq)
+		self.mdSituacionNNB_03.addSubMode(self.mdDecisionMovimientoGirarIzq)
+		self.mdSituacionNNN_03.addSubMode(self.mdDecisionMovimientoGirarIzq)
+		self.mdSituacionVBN_03.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionBBB_04.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionBBN_04.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionBNB_04.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdSituacionBNN_04.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionNBB_04.addSubMode(self.mdDecisionMovimientoCompasIzq)
+		self.mdSituacionNBN_04.addSubMode(self.mdDecisionMovimientoParar)
+		self.mdSituacionNBV_04.addSubMode(self.mdDecisionMovimientoGirarIzq)
+		self.mdSituacionNNB_04.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdSituacionNNN_04.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionVBN_04.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionBBB_05.addSubMode(self.mdDecisionMovimientoParar)
+		self.mdSituacionBBN_05.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionBNB_05.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdSituacionBNN_05.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionNBB_05.addSubMode(self.mdDecisionMovimientoCompasIzq)
+		self.mdSituacionNBN_05.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionNNB_05.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdSituacionNNN_05.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionVBN_06.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionNBB_06.addSubMode(self.mdDecisionMovimientoCompasIzq)
+		self.mdSituacionBNB_06.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdSituacionNBN_06.addSubMode(self.mdDecisionMovimientoParar)
+		self.mdSituacionNNN_06.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionBNN_06.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionBBN_06.addSubMode(self.mdDecisionMovimientoCompasDer)
+		self.mdSituacionBBB_06.addSubMode(self.mdDecisionMovimientoParar)
+		self.mdSituacionNBV_06.addSubMode(self.mdDecisionMovimientoGirarIzq)
+		self.mdSituacionNNB_06.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionBBB_07.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionBBN_07.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionBNB_07.addSubMode(self.mdDecisionMovimientoGirarIzq)
+		self.mdSituacionBNN_07.addSubMode(self.mdDecisionMovimientoGirarIzq)
+		self.mdSituacionNBB_07.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionNBN_07.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionNBV_07.addSubMode(self.mdDecisionMovimientoParar)
+		self.mdSituacionNNB_07.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionNNN_07.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionVBN_07.addSubMode(self.mdDecisionMovimientoCompasIzq)
+		self.mdSituacionVVB_07.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdSituacionVVV_07.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionVVV_08.addSubMode(self.mdDecisionMovimientoGirarDer)
+		self.mdSituacionVBN_08.addSubMode(self.mdDecisionMovimientoCompasIzq)
+		self.mdSituacionVVB_08.addSubMode(self.mdDecisionMovimientoAvanzar)
+		self.mdDecisionMovimientoAvanzar.addSubMode(self.mdRuedaDerAvanzar)
+		self.mdDecisionMovimientoCompasIzq.addSubMode(self.mdRuedaDerAvanzar)
+		self.mdDecisionMovimientoCompasDer.addSubMode(self.mdRuedaDerParada)
+		self.mdDecisionMovimientoGirarDer.addSubMode(self.mdRuedaDerRetroceder)
+		self.mdDecisionMovimientoGirarIzq.addSubMode(self.mdRuedaDerAvanzar)
+		self.mdDecisionMovimientoParar.addSubMode(self.mdRuedaDerParada)
+		self.mdRuedaDerParada.addValue(self.vlRuedaDer_Quieta)
+		self.mdRuedaDerAvanzar.addValue(self.vlRuedaDer_Adelante)
+		self.mdRuedaDerRetroceder.addValue(self.vlRuedaDer_Atras)
+		self.mdDecisionMovimientoAvanzar.addSubMode(self.mdRuedaIzqAvanzar)
+		self.mdDecisionMovimientoCompasIzq.addSubMode(self.mdRuedaIzqParada)
+		self.mdDecisionMovimientoCompasDer.addSubMode(self.mdRuedaIzqAvanzar)
+		self.mdDecisionMovimientoGirarDer.addSubMode(self.mdRuedaIzqAvanzar)
+		self.mdDecisionMovimientoGirarIzq.addSubMode(self.mdRuedaIzqRetroceder)
+		self.mdDecisionMovimientoParar.addSubMode(self.mdRuedaIzqParada)
+		self.mdRuedaIzqParada.addValue(self.vlRuedaIzq_Quieta)
+		self.mdRuedaIzqAvanzar.addValue(self.vlRuedaIzq_Adelante)
+		self.mdRuedaIzqRetroceder.addValue(self.vlRuedaIzq_Atras)
+		self.mdSituacionBNB_00.addSubMode(self.mdNuevoPasoSi)
+		self.mdSituacionBNN_01.addSubMode(self.mdNuevoPasoSi)
+		self.mdSituacionNNN_01.addSubMode(self.mdNuevoPasoSi)
+		self.mdSituacionBNN_02.addSubMode(self.mdNuevoPasoSi)
+		self.mdSituacionNNN_02.addSubMode(self.mdNuevoPasoSi)
+		self.mdSituacionNNB_03.addSubMode(self.mdNuevoPasoSi)
+		self.mdSituacionNNN_03.addSubMode(self.mdNuevoPasoSi)
+		self.mdSituacionNNB_04.addSubMode(self.mdNuevoPasoSi)
+		self.mdSituacionNNN_04.addSubMode(self.mdNuevoPasoSi)
+		self.mdSituacionBNB_05.addSubMode(self.mdNuevoPasoSi)
+		self.mdSituacionNNN_06.addSubMode(self.mdNuevoPasoSi)
+		self.mdSituacionNNB_06.addSubMode(self.mdNuevoPasoSi)
+		self.mdSituacionVVB_07.addSubMode(self.mdNuevoPasoSi)
+		self.mdSituacionVVV_08.addSubMode(self.mdNuevoPasoSi)
+		self.mdSituacionBNB_01.addSubMode(self.mdDecisionSeguidorBNB)
+		self.mdSituacionBNB_02.addSubMode(self.mdDecisionSeguidorBNB)
+		self.mdSituacionBNB_03.addSubMode(self.mdDecisionSeguidorBNB)
+		self.mdSituacionBNB_04.addSubMode(self.mdDecisionSeguidorBNB)
+		self.mdSituacionBNB_05.addSubMode(self.mdDecisionSeguidorBNB)
+		self.mdSituacionBNB_06.addSubMode(self.mdDecisionSeguidorBNB)
+		self.mdSituacionVVB_07.addSubMode(self.mdDecisionSeguidorVVB)
+		self.mdSituacionVVB_08.addSubMode(self.mdDecisionSeguidorVVB)
+		self.mdTramoP00_SituarBNB_finBNB_Avanzar.addSubMode(self.mdDecisionAparejoCerrado)
+		self.mdTramoP01_SeguirBNB_finder_giroder_abrir.addSubMode(self.mdDecisionAparejoCerrado)
+		self.mdTramoP02_SeguirBNB_finder_giroder.addSubMode(self.mdDecisionAparejoAbierto)
+		self.mdTramoP03_SeguirBNB_finizq_giroizq.addSubMode(self.mdDecisionAparejoAbierto)
+		self.mdTramoP04_SeguirBNB_fincruce_rect.addSubMode(self.mdDecisionAparejoAbierto)
+		self.mdTramoP05_SeguirNNB_finBNB_rect.addSubMode(self.mdDecisionAparejoAbierto)
+		self.mdTramoP06_SeguirBNB_finizq_giroder.addSubMode(self.mdDecisionAparejoAbierto)
+		self.mdTramoP07_SituarVVB_finVVB_Avanzar.addSubMode(self.mdDecisionAparejoAbierto)
+		self.mdTramoP08_SeguirVVB_finVVV_giroder.addSubMode(self.mdDecisionAparejoAbierto)
 
-'''
+
 motorIzq = Motor('A')
 motorDer = Motor('B')
+sensorizq = ColorSensor('C')
+sensorcentro = ColorSensor('E')
+sensorder = ColorSensor('D')
+motorAparejo = Motor('F')
+
+def letracolor(cstr):
+    # 'black','violet','blue','cyan','green','yellow','red','white',None
+    if cstr == 'black':
+        return 'N'
+    if cstr == 'white':
+        return 'B'
+    if cstr == 'green':
+        return 'V'
+    if cstr == 'blue':
+        return 'Z'
+    if cstr == 'cyan':
+        return 'C'
+    if cstr == 'red':
+        return 'R'
+    if cstr == 'violet':
+        return 'O'
+    else:
+        return '-'
+
+def sensores():
+    return letracolor(sensorizq.get_color())+letracolor(sensorcentro.get_color())+letracolor(sensorder.get_color())
+
 
 def ruedas():
     global model
     global motorIzq,motorDer
 
-    if model.prRdIzq.selV == model.vlRdIzq_Fw:
+    if model.prRuedaIzq.selectedValue == model.vlRuedaIzq_Adelante:
         motorIzq.start(100)
     else:
-        if model.prRdIzq.selV == model.vlRdIzq_Bw:
+        if model.prRuedaIzq.selectedValue == model.vlRuedaIzq_Atras:
             motorIzq.start(-100)
         else:
             motorIzq.stop()    
 
-    if model.prRdDer.selV == model.vlRdDer_Fw:
+    if model.prRuedaDer.selectedValue == model.vlRuedaDer_Adelante:
         motorDer.start(100)
     else:
-        if model.prRdDer.selV == model.vlRdDer_Bw:
+        if model.prRuedaDer.selectedValue == model.vlRuedaDer_Atras:
             motorDer.start(-100)
         else:
             motorDer.stop()
@@ -708,38 +993,49 @@ def ruedas():
 def para_todo():
     motorIzq.stop()
     motorDer.stop()
-'''
-model = csysWROPR()
 
-
-
-# Mostramos información del modelo
-print("Nombre de modelo:",model.root.name)
-
-# Seleccionamos el modo de misión Normal
-model.root.sM(model.mdMisionNormal)
-print("\n\n\nModo actual de la misión:",model.root.selM.name)
-
-fin = False
-
-# Iteramos por todos los tramos
-for t in model.root.selM.submodes:
-    tr = model.root.selM.submodes[t]
-    model.sysTr.sM(tr)
-    print("\n\n\nTramo actual:",t)
-    # Iteramos todas las situaciones posibles del tramo
-    for d in tr.submodes:
-        dr = tr.submodes[d]
-        model.sysSit.sM(dr)
-        print("Situación actual:",model.sysSit.selM.name)
-        print("Decisión actual movilidad:",model.sysDecMov.selM.name)
-        print("Decisión actual aparejo:",model.sysDecAp.selM.name)
-        print("Decisión actual siguiente paso:",model.sysNext.selM.name)
-        print("Ruedas: ",model.prRdDer.selV.name,model.prRdIzq.selV.name)
-        #ruedas()
+model = csysWROPORIS()
 
 hub = PrimeHub()
 
 hub.light_matrix.show_image('HAPPY')
 
-#para_todo()
+# Mostramos información del modelo
+print("Nombre de modelo:",model.root.name)
+
+# Seleccionamos el modo de misión Normal
+model.root.setMode(model.mdMisionNormal)
+print("\n\n\nModo actual de la misión:",model.root.selectedMode.name)
+
+fin = False
+tramo = 1
+# Iteramos por todos los tramos
+for t in model.root.selectedMode.submodes:
+    tr = model.root.selectedMode.submodes[t]
+    model.sysTramo.setMode(tr)
+    print("\n\n\nTramo actual:",t)
+    hub.light_matrix.write(str(tramo))
+    nuevotramo = False
+    while not nuevotramo:
+        # Averiguamos la situacion en la que estamos
+        d = sensores()
+        hub.light_matrix.write(d)
+        if d in tr.submodes.keys():
+            dr = tr.submodes[d]
+            model.sysSituacion.setMode(dr)
+            print("Situación actual:",model.sysSituacion.selectedMode.name)
+            print("Decisión actual movilidad:",model.sysDecisionMovimiento.selectedMode.name)
+            print("Decisión actual aparejo:",model.sysDecisionAparejo.selectedMode.name)
+            np = model.sysNuevoPaso.selectedMode
+            print("Decisión actual siguiente paso:",np.name)
+            print("Ruedas: ",model.prRuedaDer.selectedValue.name,model.prRuedaIzq.selectedValue.name)
+            #ruedas()
+            wait_for_seconds(2)
+            if (np == model.mdNuevoPasoSi):
+                nuevotramo = True
+                tramo += 1
+
+
+
+
+para_todo()
