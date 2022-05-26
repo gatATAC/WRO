@@ -1,0 +1,486 @@
+Nombre de modelo: Mision
+
+
+
+Modo actual de la misión: Normal
+
+
+
+Tramo actual: P00
+Situación actual: NNB
+Decisión actual movilidad: CompIzq
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw UNK
+Situación actual: BBB
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: BNB
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: Si
+Ruedas:  Fw Fw
+Situación actual: NNN
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: BNN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: BBN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: NBB
+Decisión actual movilidad: CompIzq
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: NBN
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: Cerr
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+
+
+
+Tramo actual: P01
+Situación actual: NNB
+Decisión actual movilidad: CompIzq
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw UNK
+Situación actual: BBB
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+Situación actual: BNB
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: NNN
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: Si
+Ruedas:  Bw Fw
+Situación actual: BNN
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: Si
+Ruedas:  Bw Fw
+Situación actual: BBN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: NBB
+Decisión actual movilidad: CompIzq
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: NBN
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+Situación actual: VBN
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  Bw Fw
+Situación actual: NBV
+Decisión actual movilidad: GirarIzq
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  Bw Fw
+Situación actual: Cerr
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Cerr
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+
+
+
+Tramo actual: P02
+Situación actual: NNB
+Decisión actual movilidad: CompIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw UNK
+Situación actual: BBB
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+Situación actual: BNB
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: NNN
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: Si
+Ruedas:  Bw Fw
+Situación actual: BNN
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: Si
+Ruedas:  Bw Fw
+Situación actual: BBN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: NBB
+Decisión actual movilidad: CompIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: NBN
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: NBV
+Decisión actual movilidad: GirarIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: VBN
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: Abi
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+
+
+
+Tramo actual: P03
+Situación actual: BNN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: BBB
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+Situación actual: BNB
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: NNN
+Decisión actual movilidad: GirarIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: Si
+Ruedas:  Fw Fw
+Situación actual: NNB
+Decisión actual movilidad: GirarIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: Si
+Ruedas:  Fw Fw
+Situación actual: BBN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: NBB
+Decisión actual movilidad: CompIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: NBN
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+Situación actual: NBV
+Decisión actual movilidad: GirarIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Bw
+Situación actual: VBN
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Bw
+Situación actual: Abi
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+
+
+
+Tramo actual: P04
+Situación actual: BNN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: BBB
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: BNB
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: NNN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: Si
+Ruedas:  UNK Fw
+Situación actual: NNB
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: Si
+Ruedas:  UNK Fw
+Situación actual: BBN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: NBB
+Decisión actual movilidad: CompIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: NBN
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+Situación actual: NBV
+Decisión actual movilidad: GirarIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Bw
+Situación actual: VBN
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Bw
+Situación actual: Abi
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+
+
+
+Tramo actual: P05
+Situación actual: BNN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: BBB
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+Situación actual: BNB
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: Si
+Ruedas:  UNK Fw
+Situación actual: NNN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: NNB
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: BBN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: NBB
+Decisión actual movilidad: CompIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: NBN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: Abi
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+
+
+
+Tramo actual: P06
+Situación actual: BNN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: BBB
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+Situación actual: BNB
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: NNN
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: Si
+Ruedas:  Bw Fw
+Situación actual: NNB
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: Si
+Ruedas:  Bw Fw
+Situación actual: BBN
+Decisión actual movilidad: CompDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK Fw
+Situación actual: NBB
+Decisión actual movilidad: CompIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: NBN
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+Situación actual: NBV
+Decisión actual movilidad: GirarIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Bw
+Situación actual: Abi
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+
+
+
+Tramo actual: P07
+Situación actual: BNN
+Decisión actual movilidad: GirarIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Bw
+Situación actual: BBB
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Bw
+Situación actual: BNB
+Decisión actual movilidad: GirarIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Bw
+Situación actual: NNN
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Bw
+Situación actual: NNB
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Bw
+Situación actual: BBN
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Bw
+Situación actual: NBB
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Bw
+Situación actual: NBN
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Bw
+Situación actual: VBN
+Decisión actual movilidad: CompIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw UNK
+Situación actual: VVB
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: Si
+Ruedas:  Fw Fw
+Situación actual: VVV
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: NBV
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+Situación actual: Abi
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK
+
+
+
+Tramo actual: P08_
+Situación actual: VBN
+Decisión actual movilidad: CompIzq
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw UNK
+Situación actual: VVB
+Decisión actual movilidad: Fw
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  Fw Fw
+Situación actual: VVV
+Decisión actual movilidad: GirarDer
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: Si
+Ruedas:  Fw Fw
+Situación actual: Abi
+Decisión actual movilidad: UNK
+Decisión actual aparejo: Abi
+Decisión actual siguiente paso: UNK
+Ruedas:  UNK UNK

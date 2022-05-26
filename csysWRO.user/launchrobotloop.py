@@ -1,75 +1,50 @@
+'''
 from spike import PrimeHub, LightMatrix, Button, StatusLight, ForceSensor, MotionSensor, Speaker, ColorSensor, App, DistanceSensor, Motor, MotorPair
 from spike.control import wait_for_seconds, wait_until, Timer
 from math import *
 
+hub = PrimeHub()
 
-
-class PORIS:
-    myclassname = "PORIS"
-    id = None
-    idx = None
-    ident = None
+hub.light_matrix.show_image('HAPPY')
+'''
+class PR:
+    myclassname = "PR"
     name = None
-    description = None
     parent = None
     def __init__(self,name):
         self.name = name
 
 
-class PORISValue(PORIS):
-    myclassname = "PORISValue"
+class PRValue(PR):
+    myclassname = "PRValue"
 
-class PORISValueFloat(PORISValue):
-    myclassname = "PORISValueFloat"
-    data = None
-    min = None
-    max = None
-    default_data = None
-
-    def setData(self,floatdata):
-        if floatdata >= self.min:
-            if floatdata <= max:
-                self.data = floatdata
-
-        return self.data
-
-class PORISValueText(PORISValue):
-    myclassname = "PORISValueText"
-    data = None
-    default_data = None
-
-    def setData(self,strdata):
-        self.data = strdata
-
-        return self.data
-
-class PORISMode(PORIS):
+class PRMode(PR):
 
     def __init__(self,name):
-        super(PORISMode, self).__init__(name)
-        self.values = {}
+        super(PRMode, self).__init__(name)
+        self.vls = {}
         self.submodes = {}
 
-    def addSubMode(self,m):
+    def aSM(self,m):
         self.submodes[m.name] = m
 
-    def addValue(self,v):
-        self.values[v.name] = v
+    def aV(self,v):
+        self.vls[v.name] = v
 
-    def getEligibleValue(self,v,current):
+    def getEgValue(self,v,curr):
         ret = None
-        if v.name in self.values.keys():
+        if v.name in self.vls.keys():
             ret = v
         else:
-            if current.name in self.values.keys():
-                ret = current
+            if curr.name in self.vls.keys():
+                ret = curr
             else:
-                itk = list(self.values.keys())[0]
-                ret = self.values[itk]
+                itk = list(self.vls.keys())[0]
+                ret = self.vls[itk]
 
         return ret
 
-    def getEligibleSubMode(self,m,current):
+    def getEgSMd(self,m,curr):
         ret = None
         found = False
 
@@ -77,8 +52,8 @@ class PORISMode(PORIS):
             ret = m
 
         else:
-            if current.name in self.submodes.keys():
-                ret = current
+            if curr.name in self.submodes.keys():
+                ret = curr
 
             else:
                 # If none of two are found, search the first submode with the same parent
@@ -90,1737 +65,623 @@ class PORISMode(PORIS):
 
         return ret
 
-    def getEligibleValueFromIdx(self,idx,current):
-        vk = list(self.values.keys())[idx]
-        result = self.getEligibleValue(self.values[vk],current)
-        if result is None:
-            ret = 0
-        else:
-            ret = result.idx
 
-        return ret
-
-    def getEligibleSubModeFromIdx(self,idx,current):
-        mk = list(self.submodes.keys())[idx]
-        result = self.getEligibleSubMode(self.submodes[mk],current)
-        if result is None:
-            ret = 0
-        else:
-            ret = result.idx
-
-        return ret
-
-class PORISNode(PORIS):
-    selectedMode = None
+class PRNode(PR):
+    selM = None
 
     def __init__(self,name):
-        super(PORISNode, self).__init__(name)
-        self.modes = {}
+        super(PRNode, self).__init__(name)
+        self.mds = {}
 
 
-    def addMode(self,m):
-        self.modes[m.name] = m
+    def aM(self,m):
+        self.mds[m.name] = m
         m.parent = self
-        if self.selectedMode == None:
-            self.selectedMode = m
+        if self.selM == None:
+            self.selM = m
 
     def init(self):
-        firstMode = list(self.modes.keys())[0]
-        self.setMode(firstMode)
+        firstMode = list(self.mds.keys())[0]
+        self.sM(firstMode)
 
-    def setEligibleMode(self):
-        if self.selectedMode is None:
+    def setEgMode(self):
+        if self.selM is None:
             self.init()
 
-        # TODO: Check if this setMode is redundant
-        return self.setMode(self.selectedMode)
+        # TODO: Check if this sM is redundant
+        return self.sM(self.selM)
 
-    def setMode(self,m):
+    def sM(self,m):
         return None
 
-    def setModeFromIdx(self,idx):
-        mk = list(self.modes.keys())[idx]
-        result = self.setMode(self.modes[mk])
-        if result is None:
-            ret = 0
-        else:
-            ret = result.idx
-
-        return ret
-
-    def getEligibleMode(self,m):
+    def getEgMode(self,m):
         ret = None
         if self.parent is None:
             ret = m
 
         else:
-            ret = self.parent.selectedMode.getEligibleSubMode(m,self.selectedMode)
+            ret = self.parent.selM.getEgSMd(m,self.selM)
 
         return ret
 
 
-    def getEligibleModeFromIdx(self,idx):
-        mk = list(self.modes.keys())[idx]
-        result = self.getEligibleMode(self.submodes[mk])
-        if result is None:
-            ret = 0
-        else:
-            ret = result.idx
-
-        return ret
-
-    def getModeFromName(self,name):
-        ret = None
-        if name in self.modes.keys():
-            ret = self.modes[name]
-
-        return ret
-
-
-class PORISParam(PORISNode):
-    selectedValue = None
+class PRParam(PRNode):
+    selV = None
 
     def __init__(self,name):
-        super(PORISParam, self).__init__(name)
-        self.values = {}
+        super(PRParam, self).__init__(name)
+        self.vls = {}
 
-    def addValue(self,v):
-        self.values[v.name] = v
+    def aV(self,v):
+        self.vls[v.name] = v
         v.parent = self
-        if self.selectedValue == None:
-            self.selectedValue = v
+        if self.selV == None:
+            self.selV = v
 
-    def setEligibleValue(self):
-        return self.setValue(self.selectedValue)
+    def setEgValue(self):
+        return self.sV(self.selV)
 
-    def setMode(self,m):
-        ret = self.getEligibleMode(m)
+    def sM(self,m):
+        ret = self.getEgMode(m)
 
         if ret is None:
-            mk = list(self.modes.keys())[0]
-            ret = self.modes[mk]
+            mk = list(self.mds.keys())[0]
+            ret = self.mds[mk]
 
-        if ret != self.selectedMode:
-            self.selectedMode = ret
-            self.setValue(self.selectedValue)
-
-        return ret
-
-    def getValueFromName(self,name):
-        ret = None
-        if name in self.values.keys():
-            ret = self.values[name]
+        if ret != self.selM:
+            self.selM = ret
+            self.sV(self.selV)
 
         return ret
 
-    def getEligibleValue(self,v,current):
+    def getEgValue(self,v,curr):
         ret = None
-        if self.selectedMode is None:
+        if self.selM is None:
             self.init()
 
-        ret = self.selectedMode.getEligibleValue(v,current)
+        ret = self.selM.getEgValue(v,curr)
 
         return ret
 
-    def setValue(self,v):
-        ret = self.getEligibleValue(v,self.selectedValue)
-        if ret != self.selectedValue:
-            self.selectedValue = ret
+    def sV(self,v):
+        ret = self.getEgValue(v,self.selV)
+        if ret != self.selV:
+            self.selV = ret
 
         return ret
 
-    def getEligibleValueFromIdx(self,idx,current):
-        vk = list(self.values.keys())[idx]
-        result = self.getEligibleValue(self.values[vk],current)
-        if result is None:
-            ret = 0
-        else:
-            ret = result.idx
-
-        return ret
-
-    def setValueFromIdx(self,idx):
-        vk = list(self.values.keys())[idx]
-        result = self.setValue(self.values[vk])
-        if result is None:
-            ret = 0
-        else:
-            ret = result.idx
-
-        return ret
-
-
-class PORISSys(PORISNode):
+class PRSys(PRNode):
 
     def __init__(self,name):
-        super(PORISSys, self).__init__(name)
+        super(PRSys, self).__init__(name)
         self.params = {}
-        self.subsystems = {}
+        self.ss = {}
 
     def addParam(self,p):
         self.params[p.name] = p
         p.parent = self
 
-    def addSubsystem(self,s):
-        self.subsystems[s.name] = s
+    def aSS(self,s):
+        self.ss[s.name] = s
         s.parent = self
 
-    def setMode(self,m):
-        ret = self.getEligibleMode(m)
+    def sM(self,m):
+        ret = self.getEgMode(m)
         if ret is None:
-            mk = list(self.modes.keys())[0]
-            ret = self.modes[mk]
+            mk = list(self.mds.keys())[0]
+            ret = self.mds[mk]
 
-        if ret != self.selectedMode:
-            self.selectedMode = ret
+        if ret != self.selM:
+            self.selM = ret
 
             for k in self.params.keys():
                 p = self.params[k]
-                p.setEligibleMode()
+                p.setEgMode()
 
-            for k in self.subsystems.keys():
-                s = self.subsystems[k]
-                s.setEligibleMode()
-
-        return ret
-
-
-    def getSubSystemFromName(self,name):
-        ret = None
-        if name in self.subsystems.keys():
-            ret = self.subsystems[name]
+            for k in self.ss.keys():
+                s = self.ss[k]
+                s.setEgMode()
 
         return ret
 
-    def getSubParamFromName(self,name):
-        ret = None
-        if name in self.params.keys():
-            ret = self.params[name]
 
-        return ret
-
-    def getDescendantFromName(self,name):
-        ret = self.getSubSystemFromName(name)
-        if ret is None:
-            for sk in self.subsystems.keys():
-                s = self.subsystems[sk]
-                ret = s.getDescendantFromName(name)
-                if ret is not None:
-                    break
-
-        return ret
-
-    def getDescendantParamFromName(self,name):
-        ret = self.getSubParamFromName(name)
-        if ret is None:
-            for sk in self.subsystems.keys():
-                s = self.subsystems[sk]
-                ret = s.getDescendantParamFromName(name)
-                if ret is not None:
-                    break
-
-        return ret
-
-class csysWROPORIS:
-    def __init__(self):
-        identcounter = 1
-        sysMision = PORISSys("Mision")
-        self.sysMision = sysMision
-        mdMisionMode_UNKNOWN = PORISMode("MisionMode_UNKNOWN")
-        self.mdMisionMode_UNKNOWN = mdMisionMode_UNKNOWN
-        self.root = sysMision
-        mdMisionMode_Normal = PORISMode("MisionMode_Normal")
-        self.mdMisionMode_Normal = mdMisionMode_Normal
-        sysTramo = PORISSys("Tramo")
-        self.sysTramo = sysTramo
-        mdTramoMode_UNKNOWN = PORISMode("TramoMode_UNKNOWN")
-        self.mdTramoMode_UNKNOWN = mdTramoMode_UNKNOWN
-        mdTramoMode_P00_SituarBNB_finBNB_Avanzar = PORISMode("TramoMode_P00_SituarBNB_finBNB_Avanzar")
-        self.mdTramoMode_P00_SituarBNB_finBNB_Avanzar = mdTramoMode_P00_SituarBNB_finBNB_Avanzar
-        mdTramoMode_P01_SeguirBNB_finder_giroder_abrir = PORISMode("TramoMode_P01_SeguirBNB_finder_giroder_abrir")
-        self.mdTramoMode_P01_SeguirBNB_finder_giroder_abrir = mdTramoMode_P01_SeguirBNB_finder_giroder_abrir
-        mdTramoMode_P02_SeguirBNB_finder_giroder = PORISMode("TramoMode_P02_SeguirBNB_finder_giroder")
-        self.mdTramoMode_P02_SeguirBNB_finder_giroder = mdTramoMode_P02_SeguirBNB_finder_giroder
-        mdTramoMode_P03_SeguirBNB_finizq_giroizq = PORISMode("TramoMode_P03_SeguirBNB_finizq_giroizq")
-        self.mdTramoMode_P03_SeguirBNB_finizq_giroizq = mdTramoMode_P03_SeguirBNB_finizq_giroizq
-        mdTramoMode_P04_SeguirBNB_fincruce_rect = PORISMode("TramoMode_P04_SeguirBNB_fincruce_rect")
-        self.mdTramoMode_P04_SeguirBNB_fincruce_rect = mdTramoMode_P04_SeguirBNB_fincruce_rect
-        mdTramoMode_P05_SeguirNNB_finBNB_rect = PORISMode("TramoMode_P05_SeguirNNB_finBNB_rect")
-        self.mdTramoMode_P05_SeguirNNB_finBNB_rect = mdTramoMode_P05_SeguirNNB_finBNB_rect
-        mdTramoMode_P06_SeguirBNB_finizq_giroder = PORISMode("TramoMode_P06_SeguirBNB_finizq_giroder")
-        self.mdTramoMode_P06_SeguirBNB_finizq_giroder = mdTramoMode_P06_SeguirBNB_finizq_giroder
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar = PORISMode("TramoMode_P07_SituarVVB_finVVB_Avanzar")
-        self.mdTramoMode_P07_SituarVVB_finVVB_Avanzar = mdTramoMode_P07_SituarVVB_finVVB_Avanzar
-        mdTramoMode_P08_SeguirVVB_finVVV_giroder = PORISMode("TramoMode_P08_SeguirVVB_finVVV_giroder")
-        self.mdTramoMode_P08_SeguirVVB_finVVV_giroder = mdTramoMode_P08_SeguirVVB_finVVV_giroder
-        sysSituacion = PORISSys("Situacion")
-        self.sysSituacion = sysSituacion
-        mdSituacionMode_UNKNOWN = PORISMode("SituacionMode_UNKNOWN")
-        self.mdSituacionMode_UNKNOWN = mdSituacionMode_UNKNOWN
-        mdSituacionMode_BNN_00 = PORISMode("SituacionMode_BNN_00")
-        self.mdSituacionMode_BNN_00 = mdSituacionMode_BNN_00
-        mdSituacionMode_NBB_00 = PORISMode("SituacionMode_NBB_00")
-        self.mdSituacionMode_NBB_00 = mdSituacionMode_NBB_00
-        mdSituacionMode_BBB_00 = PORISMode("SituacionMode_BBB_00")
-        self.mdSituacionMode_BBB_00 = mdSituacionMode_BBB_00
-        mdSituacionMode_NNB_00 = PORISMode("SituacionMode_NNB_00")
-        self.mdSituacionMode_NNB_00 = mdSituacionMode_NNB_00
-        mdSituacionMode_BNB_00 = PORISMode("SituacionMode_BNB_00")
-        self.mdSituacionMode_BNB_00 = mdSituacionMode_BNB_00
-        mdSituacionMode_NBN_00 = PORISMode("SituacionMode_NBN_00")
-        self.mdSituacionMode_NBN_00 = mdSituacionMode_NBN_00
-        mdSituacionMode_BBN_00 = PORISMode("SituacionMode_BBN_00")
-        self.mdSituacionMode_BBN_00 = mdSituacionMode_BBN_00
-        mdSituacionMode_NNN_00 = PORISMode("SituacionMode_NNN_00")
-        self.mdSituacionMode_NNN_00 = mdSituacionMode_NNN_00
-        mdSituacionMode_NBV_01 = PORISMode("SituacionMode_NBV_01")
-        self.mdSituacionMode_NBV_01 = mdSituacionMode_NBV_01
-        mdSituacionMode_BNB_01 = PORISMode("SituacionMode_BNB_01")
-        self.mdSituacionMode_BNB_01 = mdSituacionMode_BNB_01
-        mdSituacionMode_BBB_01 = PORISMode("SituacionMode_BBB_01")
-        self.mdSituacionMode_BBB_01 = mdSituacionMode_BBB_01
-        mdSituacionMode_BNN_01 = PORISMode("SituacionMode_BNN_01")
-        self.mdSituacionMode_BNN_01 = mdSituacionMode_BNN_01
-        mdSituacionMode_NBB_01 = PORISMode("SituacionMode_NBB_01")
-        self.mdSituacionMode_NBB_01 = mdSituacionMode_NBB_01
-        mdSituacionMode_NNB_01 = PORISMode("SituacionMode_NNB_01")
-        self.mdSituacionMode_NNB_01 = mdSituacionMode_NNB_01
-        mdSituacionMode_VBN_01 = PORISMode("SituacionMode_VBN_01")
-        self.mdSituacionMode_VBN_01 = mdSituacionMode_VBN_01
-        mdSituacionMode_BBN_01 = PORISMode("SituacionMode_BBN_01")
-        self.mdSituacionMode_BBN_01 = mdSituacionMode_BBN_01
-        mdSituacionMode_NNN_01 = PORISMode("SituacionMode_NNN_01")
-        self.mdSituacionMode_NNN_01 = mdSituacionMode_NNN_01
-        mdSituacionMode_NBN_01 = PORISMode("SituacionMode_NBN_01")
-        self.mdSituacionMode_NBN_01 = mdSituacionMode_NBN_01
-        mdSituacionMode_BBB_02 = PORISMode("SituacionMode_BBB_02")
-        self.mdSituacionMode_BBB_02 = mdSituacionMode_BBB_02
-        mdSituacionMode_BBN_02 = PORISMode("SituacionMode_BBN_02")
-        self.mdSituacionMode_BBN_02 = mdSituacionMode_BBN_02
-        mdSituacionMode_BNB_02 = PORISMode("SituacionMode_BNB_02")
-        self.mdSituacionMode_BNB_02 = mdSituacionMode_BNB_02
-        mdSituacionMode_BNN_02 = PORISMode("SituacionMode_BNN_02")
-        self.mdSituacionMode_BNN_02 = mdSituacionMode_BNN_02
-        mdSituacionMode_NBB_02 = PORISMode("SituacionMode_NBB_02")
-        self.mdSituacionMode_NBB_02 = mdSituacionMode_NBB_02
-        mdSituacionMode_NBN_02 = PORISMode("SituacionMode_NBN_02")
-        self.mdSituacionMode_NBN_02 = mdSituacionMode_NBN_02
-        mdSituacionMode_NBV_02 = PORISMode("SituacionMode_NBV_02")
-        self.mdSituacionMode_NBV_02 = mdSituacionMode_NBV_02
-        mdSituacionMode_NNB_02 = PORISMode("SituacionMode_NNB_02")
-        self.mdSituacionMode_NNB_02 = mdSituacionMode_NNB_02
-        mdSituacionMode_NNN_02 = PORISMode("SituacionMode_NNN_02")
-        self.mdSituacionMode_NNN_02 = mdSituacionMode_NNN_02
-        mdSituacionMode_VBN_02 = PORISMode("SituacionMode_VBN_02")
-        self.mdSituacionMode_VBN_02 = mdSituacionMode_VBN_02
-        mdSituacionMode_BBB_03 = PORISMode("SituacionMode_BBB_03")
-        self.mdSituacionMode_BBB_03 = mdSituacionMode_BBB_03
-        mdSituacionMode_BBN_03 = PORISMode("SituacionMode_BBN_03")
-        self.mdSituacionMode_BBN_03 = mdSituacionMode_BBN_03
-        mdSituacionMode_BNB_03 = PORISMode("SituacionMode_BNB_03")
-        self.mdSituacionMode_BNB_03 = mdSituacionMode_BNB_03
-        mdSituacionMode_BNN_03 = PORISMode("SituacionMode_BNN_03")
-        self.mdSituacionMode_BNN_03 = mdSituacionMode_BNN_03
-        mdSituacionMode_NBB_03 = PORISMode("SituacionMode_NBB_03")
-        self.mdSituacionMode_NBB_03 = mdSituacionMode_NBB_03
-        mdSituacionMode_NBN_03 = PORISMode("SituacionMode_NBN_03")
-        self.mdSituacionMode_NBN_03 = mdSituacionMode_NBN_03
-        mdSituacionMode_NBV_03 = PORISMode("SituacionMode_NBV_03")
-        self.mdSituacionMode_NBV_03 = mdSituacionMode_NBV_03
-        mdSituacionMode_NNB_03 = PORISMode("SituacionMode_NNB_03")
-        self.mdSituacionMode_NNB_03 = mdSituacionMode_NNB_03
-        mdSituacionMode_NNN_03 = PORISMode("SituacionMode_NNN_03")
-        self.mdSituacionMode_NNN_03 = mdSituacionMode_NNN_03
-        mdSituacionMode_VBN_03 = PORISMode("SituacionMode_VBN_03")
-        self.mdSituacionMode_VBN_03 = mdSituacionMode_VBN_03
-        mdSituacionMode_BBB_04 = PORISMode("SituacionMode_BBB_04")
-        self.mdSituacionMode_BBB_04 = mdSituacionMode_BBB_04
-        mdSituacionMode_BBN_04 = PORISMode("SituacionMode_BBN_04")
-        self.mdSituacionMode_BBN_04 = mdSituacionMode_BBN_04
-        mdSituacionMode_BNB_04 = PORISMode("SituacionMode_BNB_04")
-        self.mdSituacionMode_BNB_04 = mdSituacionMode_BNB_04
-        mdSituacionMode_BNN_04 = PORISMode("SituacionMode_BNN_04")
-        self.mdSituacionMode_BNN_04 = mdSituacionMode_BNN_04
-        mdSituacionMode_NBB_04 = PORISMode("SituacionMode_NBB_04")
-        self.mdSituacionMode_NBB_04 = mdSituacionMode_NBB_04
-        mdSituacionMode_NBN_04 = PORISMode("SituacionMode_NBN_04")
-        self.mdSituacionMode_NBN_04 = mdSituacionMode_NBN_04
-        mdSituacionMode_NBV_04 = PORISMode("SituacionMode_NBV_04")
-        self.mdSituacionMode_NBV_04 = mdSituacionMode_NBV_04
-        mdSituacionMode_NNB_04 = PORISMode("SituacionMode_NNB_04")
-        self.mdSituacionMode_NNB_04 = mdSituacionMode_NNB_04
-        mdSituacionMode_NNN_04 = PORISMode("SituacionMode_NNN_04")
-        self.mdSituacionMode_NNN_04 = mdSituacionMode_NNN_04
-        mdSituacionMode_VBN_04 = PORISMode("SituacionMode_VBN_04")
-        self.mdSituacionMode_VBN_04 = mdSituacionMode_VBN_04
-        mdSituacionMode_BBB_05 = PORISMode("SituacionMode_BBB_05")
-        self.mdSituacionMode_BBB_05 = mdSituacionMode_BBB_05
-        mdSituacionMode_BBN_05 = PORISMode("SituacionMode_BBN_05")
-        self.mdSituacionMode_BBN_05 = mdSituacionMode_BBN_05
-        mdSituacionMode_BNB_05 = PORISMode("SituacionMode_BNB_05")
-        self.mdSituacionMode_BNB_05 = mdSituacionMode_BNB_05
-        mdSituacionMode_BNN_05 = PORISMode("SituacionMode_BNN_05")
-        self.mdSituacionMode_BNN_05 = mdSituacionMode_BNN_05
-        mdSituacionMode_NBB_05 = PORISMode("SituacionMode_NBB_05")
-        self.mdSituacionMode_NBB_05 = mdSituacionMode_NBB_05
-        mdSituacionMode_NBN_05 = PORISMode("SituacionMode_NBN_05")
-        self.mdSituacionMode_NBN_05 = mdSituacionMode_NBN_05
-        mdSituacionMode_NNB_05 = PORISMode("SituacionMode_NNB_05")
-        self.mdSituacionMode_NNB_05 = mdSituacionMode_NNB_05
-        mdSituacionMode_NNN_05 = PORISMode("SituacionMode_NNN_05")
-        self.mdSituacionMode_NNN_05 = mdSituacionMode_NNN_05
-        mdSituacionMode_VBN_06 = PORISMode("SituacionMode_VBN_06")
-        self.mdSituacionMode_VBN_06 = mdSituacionMode_VBN_06
-        mdSituacionMode_NBB_06 = PORISMode("SituacionMode_NBB_06")
-        self.mdSituacionMode_NBB_06 = mdSituacionMode_NBB_06
-        mdSituacionMode_BNB_06 = PORISMode("SituacionMode_BNB_06")
-        self.mdSituacionMode_BNB_06 = mdSituacionMode_BNB_06
-        mdSituacionMode_NBN_06 = PORISMode("SituacionMode_NBN_06")
-        self.mdSituacionMode_NBN_06 = mdSituacionMode_NBN_06
-        mdSituacionMode_NNN_06 = PORISMode("SituacionMode_NNN_06")
-        self.mdSituacionMode_NNN_06 = mdSituacionMode_NNN_06
-        mdSituacionMode_BNN_06 = PORISMode("SituacionMode_BNN_06")
-        self.mdSituacionMode_BNN_06 = mdSituacionMode_BNN_06
-        mdSituacionMode_BBN_06 = PORISMode("SituacionMode_BBN_06")
-        self.mdSituacionMode_BBN_06 = mdSituacionMode_BBN_06
-        mdSituacionMode_BBB_06 = PORISMode("SituacionMode_BBB_06")
-        self.mdSituacionMode_BBB_06 = mdSituacionMode_BBB_06
-        mdSituacionMode_NBV_06 = PORISMode("SituacionMode_NBV_06")
-        self.mdSituacionMode_NBV_06 = mdSituacionMode_NBV_06
-        mdSituacionMode_NNB_06 = PORISMode("SituacionMode_NNB_06")
-        self.mdSituacionMode_NNB_06 = mdSituacionMode_NNB_06
-        mdSituacionMode_BBB_07 = PORISMode("SituacionMode_BBB_07")
-        self.mdSituacionMode_BBB_07 = mdSituacionMode_BBB_07
-        mdSituacionMode_BBN_07 = PORISMode("SituacionMode_BBN_07")
-        self.mdSituacionMode_BBN_07 = mdSituacionMode_BBN_07
-        mdSituacionMode_BNB_07 = PORISMode("SituacionMode_BNB_07")
-        self.mdSituacionMode_BNB_07 = mdSituacionMode_BNB_07
-        mdSituacionMode_BNN_07 = PORISMode("SituacionMode_BNN_07")
-        self.mdSituacionMode_BNN_07 = mdSituacionMode_BNN_07
-        mdSituacionMode_NBB_07 = PORISMode("SituacionMode_NBB_07")
-        self.mdSituacionMode_NBB_07 = mdSituacionMode_NBB_07
-        mdSituacionMode_NBN_07 = PORISMode("SituacionMode_NBN_07")
-        self.mdSituacionMode_NBN_07 = mdSituacionMode_NBN_07
-        mdSituacionMode_NBV_07 = PORISMode("SituacionMode_NBV_07")
-        self.mdSituacionMode_NBV_07 = mdSituacionMode_NBV_07
-        mdSituacionMode_NNB_07 = PORISMode("SituacionMode_NNB_07")
-        self.mdSituacionMode_NNB_07 = mdSituacionMode_NNB_07
-        mdSituacionMode_NNN_07 = PORISMode("SituacionMode_NNN_07")
-        self.mdSituacionMode_NNN_07 = mdSituacionMode_NNN_07
-        mdSituacionMode_VBN_07 = PORISMode("SituacionMode_VBN_07")
-        self.mdSituacionMode_VBN_07 = mdSituacionMode_VBN_07
-        mdSituacionMode_VVB_07 = PORISMode("SituacionMode_VVB_07")
-        self.mdSituacionMode_VVB_07 = mdSituacionMode_VVB_07
-        mdSituacionMode_VVV_07 = PORISMode("SituacionMode_VVV_07")
-        self.mdSituacionMode_VVV_07 = mdSituacionMode_VVV_07
-        mdSituacionMode_VVV_08 = PORISMode("SituacionMode_VVV_08")
-        self.mdSituacionMode_VVV_08 = mdSituacionMode_VVV_08
-        mdSituacionMode_VBN_08 = PORISMode("SituacionMode_VBN_08")
-        self.mdSituacionMode_VBN_08 = mdSituacionMode_VBN_08
-        mdSituacionMode_VVB_08 = PORISMode("SituacionMode_VVB_08")
-        self.mdSituacionMode_VVB_08 = mdSituacionMode_VVB_08
-        sysDecisionMovimiento = PORISSys("DecisionMovimiento")
-        self.sysDecisionMovimiento = sysDecisionMovimiento
-        mdDecisionMovimientoMode_UNKNOWN = PORISMode("DecisionMovimientoMode_UNKNOWN")
-        self.mdDecisionMovimientoMode_UNKNOWN = mdDecisionMovimientoMode_UNKNOWN
-        mdDecisionMovimientoMode_Avanzar = PORISMode("DecisionMovimientoMode_Avanzar")
-        self.mdDecisionMovimientoMode_Avanzar = mdDecisionMovimientoMode_Avanzar
-        mdDecisionMovimientoMode_CompasIzq = PORISMode("DecisionMovimientoMode_CompasIzq")
-        self.mdDecisionMovimientoMode_CompasIzq = mdDecisionMovimientoMode_CompasIzq
-        mdDecisionMovimientoMode_CompasDer = PORISMode("DecisionMovimientoMode_CompasDer")
-        self.mdDecisionMovimientoMode_CompasDer = mdDecisionMovimientoMode_CompasDer
-        mdDecisionMovimientoMode_GirarDer = PORISMode("DecisionMovimientoMode_GirarDer")
-        self.mdDecisionMovimientoMode_GirarDer = mdDecisionMovimientoMode_GirarDer
-        mdDecisionMovimientoMode_GirarIzq = PORISMode("DecisionMovimientoMode_GirarIzq")
-        self.mdDecisionMovimientoMode_GirarIzq = mdDecisionMovimientoMode_GirarIzq
-        mdDecisionMovimientoMode_Parar = PORISMode("DecisionMovimientoMode_Parar")
-        self.mdDecisionMovimientoMode_Parar = mdDecisionMovimientoMode_Parar
-        prRuedaDer = PORISParam("RuedaDer")
-        self.prRuedaDer = prRuedaDer
-        mdRuedaDerMode_UNKNOWN = PORISMode("RuedaDerMode_UNKNOWN")
-        self.mdRuedaDerMode_UNKNOWN = mdRuedaDerMode_UNKNOWN
-        vlRuedaDer_UNKNOWN = PORISValue("RuedaDer_UNKNOWN")
-        self.vlRuedaDer_UNKNOWN = vlRuedaDer_UNKNOWN
-        mdRuedaDerMode_Parada = PORISMode("RuedaDerMode_Parada")
-        self.mdRuedaDerMode_Parada = mdRuedaDerMode_Parada
-        mdRuedaDerMode_Avanzar = PORISMode("RuedaDerMode_Avanzar")
-        self.mdRuedaDerMode_Avanzar = mdRuedaDerMode_Avanzar
-        mdRuedaDerMode_Retroceder = PORISMode("RuedaDerMode_Retroceder")
-        self.mdRuedaDerMode_Retroceder = mdRuedaDerMode_Retroceder
-        vlRuedaDer_Quieta = PORISValue("RuedaDer_Quieta")
-        self.vlRuedaDer_Quieta = vlRuedaDer_Quieta
-        vlRuedaDer_Adelante = PORISValue("RuedaDer_Adelante")
-        self.vlRuedaDer_Adelante = vlRuedaDer_Adelante
-        vlRuedaDer_Atras = PORISValue("RuedaDer_Atras")
-        self.vlRuedaDer_Atras = vlRuedaDer_Atras
-        prRuedaIzq = PORISParam("RuedaIzq")
-        self.prRuedaIzq = prRuedaIzq
-        mdRuedaIzqMode_UNKNOWN = PORISMode("RuedaIzqMode_UNKNOWN")
-        self.mdRuedaIzqMode_UNKNOWN = mdRuedaIzqMode_UNKNOWN
-        vlRuedaIzq_UNKNOWN = PORISValue("RuedaIzq_UNKNOWN")
-        self.vlRuedaIzq_UNKNOWN = vlRuedaIzq_UNKNOWN
-        mdRuedaIzqMode_Parada = PORISMode("RuedaIzqMode_Parada")
-        self.mdRuedaIzqMode_Parada = mdRuedaIzqMode_Parada
-        mdRuedaIzqMode_Avanzar = PORISMode("RuedaIzqMode_Avanzar")
-        self.mdRuedaIzqMode_Avanzar = mdRuedaIzqMode_Avanzar
-        mdRuedaIzqMode_Retroceder = PORISMode("RuedaIzqMode_Retroceder")
-        self.mdRuedaIzqMode_Retroceder = mdRuedaIzqMode_Retroceder
-        vlRuedaIzq_Quieta = PORISValue("RuedaIzq_Quieta")
-        self.vlRuedaIzq_Quieta = vlRuedaIzq_Quieta
-        vlRuedaIzq_Adelante = PORISValue("RuedaIzq_Adelante")
-        self.vlRuedaIzq_Adelante = vlRuedaIzq_Adelante
-        vlRuedaIzq_Atras = PORISValue("RuedaIzq_Atras")
-        self.vlRuedaIzq_Atras = vlRuedaIzq_Atras
-        sysNuevoPaso = PORISSys("NuevoPaso")
-        self.sysNuevoPaso = sysNuevoPaso
-        mdNuevoPasoMode_UNKNOWN = PORISMode("NuevoPasoMode_UNKNOWN")
-        self.mdNuevoPasoMode_UNKNOWN = mdNuevoPasoMode_UNKNOWN
-        mdNuevoPasoMode_Si = PORISMode("NuevoPasoMode_Si")
-        self.mdNuevoPasoMode_Si = mdNuevoPasoMode_Si
-        sysDecisionSeguidor = PORISSys("DecisionSeguidor")
-        self.sysDecisionSeguidor = sysDecisionSeguidor
-        mdDecisionSeguidorMode_UNKNOWN = PORISMode("DecisionSeguidorMode_UNKNOWN")
-        self.mdDecisionSeguidorMode_UNKNOWN = mdDecisionSeguidorMode_UNKNOWN
-        mdDecisionSeguidorMode_BNB = PORISMode("DecisionSeguidorMode_BNB")
-        self.mdDecisionSeguidorMode_BNB = mdDecisionSeguidorMode_BNB
-        mdDecisionSeguidorMode_VVB = PORISMode("DecisionSeguidorMode_VVB")
-        self.mdDecisionSeguidorMode_VVB = mdDecisionSeguidorMode_VVB
-        sysDecisionAparejo = PORISSys("DecisionAparejo")
-        self.sysDecisionAparejo = sysDecisionAparejo
-        mdDecisionAparejoMode_UNKNOWN = PORISMode("DecisionAparejoMode_UNKNOWN")
-        self.mdDecisionAparejoMode_UNKNOWN = mdDecisionAparejoMode_UNKNOWN
-        mdDecisionAparejoMode_Abierto = PORISMode("DecisionAparejoMode_Abierto")
-        self.mdDecisionAparejoMode_Abierto = mdDecisionAparejoMode_Abierto
-        mdDecisionAparejoMode_Medio = PORISMode("DecisionAparejoMode_Medio")
-        self.mdDecisionAparejoMode_Medio = mdDecisionAparejoMode_Medio
-        mdDecisionAparejoMode_Cerrado = PORISMode("DecisionAparejoMode_Cerrado")
-        self.mdDecisionAparejoMode_Cerrado = mdDecisionAparejoMode_Cerrado
-        mdMisionMode_Engineering = PORISMode("MisionMode_Engineering")
-        self.mdMisionMode_Engineering = mdMisionMode_Engineering
-        mdTramoMode_Engineering = PORISMode("TramoMode_Engineering")
-        self.mdTramoMode_Engineering = mdTramoMode_Engineering
-        mdSituacionMode_Engineering = PORISMode("SituacionMode_Engineering")
-        self.mdSituacionMode_Engineering = mdSituacionMode_Engineering
-        mdDecisionMovimientoMode_Engineering = PORISMode("DecisionMovimientoMode_Engineering")
-        self.mdDecisionMovimientoMode_Engineering = mdDecisionMovimientoMode_Engineering
-
-        sysMision.id = identcounter
-        identcounter += 1
-
-        mdMisionMode_UNKNOWN.id = identcounter
-        identcounter += 1
-        sysMision.addMode(mdMisionMode_UNKNOWN);
-
-        mdMisionMode_Normal.id = identcounter
-        identcounter += 1
-        sysMision.addMode(mdMisionMode_Normal)
-
-        sysTramo.id = identcounter
-        identcounter += 1
-        sysMision.addSubsystem(sysTramo);
-
-        mdTramoMode_UNKNOWN.id = identcounter
-        identcounter += 1
-        sysTramo.addMode(mdTramoMode_UNKNOWN);
-
-        mdTramoMode_P00_SituarBNB_finBNB_Avanzar.id = identcounter
-        identcounter += 1
-        sysTramo.addMode(mdTramoMode_P00_SituarBNB_finBNB_Avanzar)
-
-        mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.id = identcounter
-        identcounter += 1
-        sysTramo.addMode(mdTramoMode_P01_SeguirBNB_finder_giroder_abrir)
-
-        mdTramoMode_P02_SeguirBNB_finder_giroder.id = identcounter
-        identcounter += 1
-        sysTramo.addMode(mdTramoMode_P02_SeguirBNB_finder_giroder)
-
-        mdTramoMode_P03_SeguirBNB_finizq_giroizq.id = identcounter
-        identcounter += 1
-        sysTramo.addMode(mdTramoMode_P03_SeguirBNB_finizq_giroizq)
-
-        mdTramoMode_P04_SeguirBNB_fincruce_rect.id = identcounter
-        identcounter += 1
-        sysTramo.addMode(mdTramoMode_P04_SeguirBNB_fincruce_rect)
-
-        mdTramoMode_P05_SeguirNNB_finBNB_rect.id = identcounter
-        identcounter += 1
-        sysTramo.addMode(mdTramoMode_P05_SeguirNNB_finBNB_rect)
-
-        mdTramoMode_P06_SeguirBNB_finizq_giroder.id = identcounter
-        identcounter += 1
-        sysTramo.addMode(mdTramoMode_P06_SeguirBNB_finizq_giroder)
-
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar.id = identcounter
-        identcounter += 1
-        sysTramo.addMode(mdTramoMode_P07_SituarVVB_finVVB_Avanzar)
-
-        mdTramoMode_P08_SeguirVVB_finVVV_giroder.id = identcounter
-        identcounter += 1
-        sysTramo.addMode(mdTramoMode_P08_SeguirVVB_finVVV_giroder)
-
-        sysSituacion.id = identcounter
-        identcounter += 1
-        sysTramo.addSubsystem(sysSituacion);
-
-        mdSituacionMode_UNKNOWN.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_UNKNOWN);
-
-        mdSituacionMode_BNN_00.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNN_00)
-
-        mdSituacionMode_NBB_00.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBB_00)
-
-        mdSituacionMode_BBB_00.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBB_00)
-
-        mdSituacionMode_NNB_00.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNB_00)
-
-        mdSituacionMode_BNB_00.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNB_00)
-
-        mdSituacionMode_NBN_00.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBN_00)
-
-        mdSituacionMode_BBN_00.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBN_00)
-
-        mdSituacionMode_NNN_00.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNN_00)
-
-        mdSituacionMode_NBV_01.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBV_01)
-
-        mdSituacionMode_BNB_01.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNB_01)
-
-        mdSituacionMode_BBB_01.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBB_01)
-
-        mdSituacionMode_BNN_01.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNN_01)
-
-        mdSituacionMode_NBB_01.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBB_01)
-
-        mdSituacionMode_NNB_01.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNB_01)
-
-        mdSituacionMode_VBN_01.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_VBN_01)
-
-        mdSituacionMode_BBN_01.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBN_01)
-
-        mdSituacionMode_NNN_01.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNN_01)
-
-        mdSituacionMode_NBN_01.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBN_01)
-
-        mdSituacionMode_BBB_02.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBB_02)
-
-        mdSituacionMode_BBN_02.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBN_02)
-
-        mdSituacionMode_BNB_02.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNB_02)
-
-        mdSituacionMode_BNN_02.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNN_02)
-
-        mdSituacionMode_NBB_02.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBB_02)
-
-        mdSituacionMode_NBN_02.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBN_02)
-
-        mdSituacionMode_NBV_02.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBV_02)
-
-        mdSituacionMode_NNB_02.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNB_02)
-
-        mdSituacionMode_NNN_02.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNN_02)
-
-        mdSituacionMode_VBN_02.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_VBN_02)
-
-        mdSituacionMode_BBB_03.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBB_03)
-
-        mdSituacionMode_BBN_03.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBN_03)
-
-        mdSituacionMode_BNB_03.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNB_03)
-
-        mdSituacionMode_BNN_03.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNN_03)
-
-        mdSituacionMode_NBB_03.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBB_03)
-
-        mdSituacionMode_NBN_03.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBN_03)
-
-        mdSituacionMode_NBV_03.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBV_03)
-
-        mdSituacionMode_NNB_03.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNB_03)
-
-        mdSituacionMode_NNN_03.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNN_03)
-
-        mdSituacionMode_VBN_03.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_VBN_03)
-
-        mdSituacionMode_BBB_04.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBB_04)
-
-        mdSituacionMode_BBN_04.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBN_04)
-
-        mdSituacionMode_BNB_04.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNB_04)
-
-        mdSituacionMode_BNN_04.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNN_04)
-
-        mdSituacionMode_NBB_04.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBB_04)
-
-        mdSituacionMode_NBN_04.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBN_04)
-
-        mdSituacionMode_NBV_04.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBV_04)
-
-        mdSituacionMode_NNB_04.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNB_04)
-
-        mdSituacionMode_NNN_04.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNN_04)
-
-        mdSituacionMode_VBN_04.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_VBN_04)
-
-        mdSituacionMode_BBB_05.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBB_05)
-
-        mdSituacionMode_BBN_05.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBN_05)
-
-        mdSituacionMode_BNB_05.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNB_05)
-
-        mdSituacionMode_BNN_05.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNN_05)
-
-        mdSituacionMode_NBB_05.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBB_05)
-
-        mdSituacionMode_NBN_05.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBN_05)
-
-        mdSituacionMode_NNB_05.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNB_05)
-
-        mdSituacionMode_NNN_05.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNN_05)
-
-        mdSituacionMode_VBN_06.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_VBN_06)
-
-        mdSituacionMode_NBB_06.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBB_06)
-
-        mdSituacionMode_BNB_06.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNB_06)
-
-        mdSituacionMode_NBN_06.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBN_06)
-
-        mdSituacionMode_NNN_06.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNN_06)
-
-        mdSituacionMode_BNN_06.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNN_06)
-
-        mdSituacionMode_BBN_06.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBN_06)
-
-        mdSituacionMode_BBB_06.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBB_06)
-
-        mdSituacionMode_NBV_06.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBV_06)
-
-        mdSituacionMode_NNB_06.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNB_06)
-
-        mdSituacionMode_BBB_07.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBB_07)
-
-        mdSituacionMode_BBN_07.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BBN_07)
-
-        mdSituacionMode_BNB_07.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNB_07)
-
-        mdSituacionMode_BNN_07.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_BNN_07)
-
-        mdSituacionMode_NBB_07.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBB_07)
-
-        mdSituacionMode_NBN_07.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBN_07)
-
-        mdSituacionMode_NBV_07.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NBV_07)
-
-        mdSituacionMode_NNB_07.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNB_07)
-
-        mdSituacionMode_NNN_07.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_NNN_07)
-
-        mdSituacionMode_VBN_07.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_VBN_07)
-
-        mdSituacionMode_VVB_07.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_VVB_07)
-
-        mdSituacionMode_VVV_07.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_VVV_07)
-
-        mdSituacionMode_VVV_08.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_VVV_08)
-
-        mdSituacionMode_VBN_08.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_VBN_08)
-
-        mdSituacionMode_VVB_08.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_VVB_08)
-
-        sysDecisionMovimiento.id = identcounter
-        identcounter += 1
-        sysSituacion.addSubsystem(sysDecisionMovimiento);
-
-        mdDecisionMovimientoMode_UNKNOWN.id = identcounter
-        identcounter += 1
-        sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_UNKNOWN);
-
-        mdDecisionMovimientoMode_Avanzar.id = identcounter
-        identcounter += 1
-        sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_Avanzar)
-
-        mdDecisionMovimientoMode_CompasIzq.id = identcounter
-        identcounter += 1
-        sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_CompasIzq)
-
-        mdDecisionMovimientoMode_CompasDer.id = identcounter
-        identcounter += 1
-        sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_CompasDer)
-
-        mdDecisionMovimientoMode_GirarDer.id = identcounter
-        identcounter += 1
-        sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_GirarDer)
-
-        mdDecisionMovimientoMode_GirarIzq.id = identcounter
-        identcounter += 1
-        sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_GirarIzq)
-
-        mdDecisionMovimientoMode_Parar.id = identcounter
-        identcounter += 1
-        sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_Parar)
-
-        prRuedaDer.id = identcounter
-        identcounter += 1
-        sysDecisionMovimiento.addParam(prRuedaDer)
-        vlRuedaDer_UNKNOWN.id = identcounter
-        identcounter += 1
-        prRuedaDer.addValue(vlRuedaDer_UNKNOWN)
-
-        mdRuedaDerMode_UNKNOWN.id = identcounter
-        identcounter += 1
-        prRuedaDer.addMode(mdRuedaDerMode_UNKNOWN)
-        mdRuedaDerMode_UNKNOWN.addValue(vlRuedaDer_UNKNOWN)
-        mdDecisionMovimientoMode_UNKNOWN.addSubMode(mdRuedaDerMode_UNKNOWN)
-
-        mdRuedaDerMode_Parada.id = identcounter
-        identcounter += 1
-        prRuedaDer.addMode(mdRuedaDerMode_Parada)
-
-        mdRuedaDerMode_Avanzar.id = identcounter
-        identcounter += 1
-        prRuedaDer.addMode(mdRuedaDerMode_Avanzar)
-
-        mdRuedaDerMode_Retroceder.id = identcounter
-        identcounter += 1
-        prRuedaDer.addMode(mdRuedaDerMode_Retroceder)
-
-        vlRuedaDer_Quieta.id = identcounter
-        identcounter += 1
-        prRuedaDer.addValue(vlRuedaDer_Quieta)
-
-        vlRuedaDer_Adelante.id = identcounter
-        identcounter += 1
-        prRuedaDer.addValue(vlRuedaDer_Adelante)
-
-        vlRuedaDer_Atras.id = identcounter
-        identcounter += 1
-        prRuedaDer.addValue(vlRuedaDer_Atras)
-
-        prRuedaIzq.id = identcounter
-        identcounter += 1
-        sysDecisionMovimiento.addParam(prRuedaIzq)
-        vlRuedaIzq_UNKNOWN.id = identcounter
-        identcounter += 1
-        prRuedaIzq.addValue(vlRuedaIzq_UNKNOWN)
-
-        mdRuedaIzqMode_UNKNOWN.id = identcounter
-        identcounter += 1
-        prRuedaIzq.addMode(mdRuedaIzqMode_UNKNOWN)
-        mdRuedaIzqMode_UNKNOWN.addValue(vlRuedaIzq_UNKNOWN)
-        mdDecisionMovimientoMode_UNKNOWN.addSubMode(mdRuedaIzqMode_UNKNOWN)
-
-        mdRuedaIzqMode_Parada.id = identcounter
-        identcounter += 1
-        prRuedaIzq.addMode(mdRuedaIzqMode_Parada)
-
-        mdRuedaIzqMode_Avanzar.id = identcounter
-        identcounter += 1
-        prRuedaIzq.addMode(mdRuedaIzqMode_Avanzar)
-
-        mdRuedaIzqMode_Retroceder.id = identcounter
-        identcounter += 1
-        prRuedaIzq.addMode(mdRuedaIzqMode_Retroceder)
-
-        vlRuedaIzq_Quieta.id = identcounter
-        identcounter += 1
-        prRuedaIzq.addValue(vlRuedaIzq_Quieta)
-
-        vlRuedaIzq_Adelante.id = identcounter
-        identcounter += 1
-        prRuedaIzq.addValue(vlRuedaIzq_Adelante)
-
-        vlRuedaIzq_Atras.id = identcounter
-        identcounter += 1
-        prRuedaIzq.addValue(vlRuedaIzq_Atras)
-
-        sysNuevoPaso.id = identcounter
-        identcounter += 1
-        sysSituacion.addSubsystem(sysNuevoPaso);
-
-        mdNuevoPasoMode_UNKNOWN.id = identcounter
-        identcounter += 1
-        sysNuevoPaso.addMode(mdNuevoPasoMode_UNKNOWN);
-
-        mdNuevoPasoMode_Si.id = identcounter
-        identcounter += 1
-        sysNuevoPaso.addMode(mdNuevoPasoMode_Si)
-
-        sysDecisionSeguidor.id = identcounter
-        identcounter += 1
-        sysSituacion.addSubsystem(sysDecisionSeguidor);
-
-        mdDecisionSeguidorMode_UNKNOWN.id = identcounter
-        identcounter += 1
-        sysDecisionSeguidor.addMode(mdDecisionSeguidorMode_UNKNOWN);
-
-        mdDecisionSeguidorMode_BNB.id = identcounter
-        identcounter += 1
-        sysDecisionSeguidor.addMode(mdDecisionSeguidorMode_BNB)
-
-        mdDecisionSeguidorMode_VVB.id = identcounter
-        identcounter += 1
-        sysDecisionSeguidor.addMode(mdDecisionSeguidorMode_VVB)
-
-        sysDecisionAparejo.id = identcounter
-        identcounter += 1
-        sysTramo.addSubsystem(sysDecisionAparejo);
-
-        mdDecisionAparejoMode_UNKNOWN.id = identcounter
-        identcounter += 1
-        sysDecisionAparejo.addMode(mdDecisionAparejoMode_UNKNOWN);
-
-        mdDecisionAparejoMode_Abierto.id = identcounter
-        identcounter += 1
-        sysDecisionAparejo.addMode(mdDecisionAparejoMode_Abierto)
-
-        mdDecisionAparejoMode_Medio.id = identcounter
-        identcounter += 1
-        sysDecisionAparejo.addMode(mdDecisionAparejoMode_Medio)
-
-        mdDecisionAparejoMode_Cerrado.id = identcounter
-        identcounter += 1
-        sysDecisionAparejo.addMode(mdDecisionAparejoMode_Cerrado)
-
-        mdMisionMode_Engineering.id = identcounter
-        identcounter += 1
-        sysMision.addMode(mdMisionMode_Engineering)
-
-        mdTramoMode_Engineering.id = identcounter
-        identcounter += 1
-        sysTramo.addMode(mdTramoMode_Engineering)
-
-        mdSituacionMode_Engineering.id = identcounter
-        identcounter += 1
-        sysSituacion.addMode(mdSituacionMode_Engineering)
-
-        mdDecisionMovimientoMode_Engineering.id = identcounter
-        identcounter += 1
-        sysDecisionMovimiento.addMode(mdDecisionMovimientoMode_Engineering)
-        # Marcamos TramoMode_P00_SituarBNB_finBNB_Avanzar como elegible para MisionMode_Normal
-        mdMisionMode_Normal.addSubMode(mdTramoMode_P00_SituarBNB_finBNB_Avanzar)
-        # Marcamos TramoMode_P01_SeguirBNB_finder_giroder_abrir como elegible para MisionMode_Normal
-        mdMisionMode_Normal.addSubMode(mdTramoMode_P01_SeguirBNB_finder_giroder_abrir)
-        # Marcamos TramoMode_P02_SeguirBNB_finder_giroder como elegible para MisionMode_Normal
-        mdMisionMode_Normal.addSubMode(mdTramoMode_P02_SeguirBNB_finder_giroder)
-        # Marcamos TramoMode_P03_SeguirBNB_finizq_giroizq como elegible para MisionMode_Normal
-        mdMisionMode_Normal.addSubMode(mdTramoMode_P03_SeguirBNB_finizq_giroizq)
-        # Marcamos TramoMode_P04_SeguirBNB_fincruce_rect como elegible para MisionMode_Normal
-        mdMisionMode_Normal.addSubMode(mdTramoMode_P04_SeguirBNB_fincruce_rect)
-        # Marcamos TramoMode_P05_SeguirNNB_finBNB_rect como elegible para MisionMode_Normal
-        mdMisionMode_Normal.addSubMode(mdTramoMode_P05_SeguirNNB_finBNB_rect)
-        # Marcamos TramoMode_P06_SeguirBNB_finizq_giroder como elegible para MisionMode_Normal
-        mdMisionMode_Normal.addSubMode(mdTramoMode_P06_SeguirBNB_finizq_giroder)
-        # Marcamos TramoMode_P07_SituarVVB_finVVB_Avanzar como elegible para MisionMode_Normal
-        mdMisionMode_Normal.addSubMode(mdTramoMode_P07_SituarVVB_finVVB_Avanzar)
-        # Marcamos TramoMode_P08_SeguirVVB_finVVV_giroder como elegible para MisionMode_Normal
-        mdMisionMode_Normal.addSubMode(mdTramoMode_P08_SeguirVVB_finVVV_giroder)
-        # Marcamos TramoMode_P00_SituarBNB_finBNB_Avanzar como elegible para MisionMode_Engineering
-        mdMisionMode_Engineering.addSubMode(mdTramoMode_P00_SituarBNB_finBNB_Avanzar)
-        # Marcamos TramoMode_P01_SeguirBNB_finder_giroder_abrir como elegible para MisionMode_Engineering
-        mdMisionMode_Engineering.addSubMode(mdTramoMode_P01_SeguirBNB_finder_giroder_abrir)
-        # Marcamos TramoMode_P02_SeguirBNB_finder_giroder como elegible para MisionMode_Engineering
-        mdMisionMode_Engineering.addSubMode(mdTramoMode_P02_SeguirBNB_finder_giroder)
-        # Marcamos TramoMode_P03_SeguirBNB_finizq_giroizq como elegible para MisionMode_Engineering
-        mdMisionMode_Engineering.addSubMode(mdTramoMode_P03_SeguirBNB_finizq_giroizq)
-        # Marcamos TramoMode_P04_SeguirBNB_fincruce_rect como elegible para MisionMode_Engineering
-        mdMisionMode_Engineering.addSubMode(mdTramoMode_P04_SeguirBNB_fincruce_rect)
-        # Marcamos TramoMode_P05_SeguirNNB_finBNB_rect como elegible para MisionMode_Engineering
-        mdMisionMode_Engineering.addSubMode(mdTramoMode_P05_SeguirNNB_finBNB_rect)
-        # Marcamos TramoMode_P06_SeguirBNB_finizq_giroder como elegible para MisionMode_Engineering
-        mdMisionMode_Engineering.addSubMode(mdTramoMode_P06_SeguirBNB_finizq_giroder)
-        # Marcamos TramoMode_P07_SituarVVB_finVVB_Avanzar como elegible para MisionMode_Engineering
-        mdMisionMode_Engineering.addSubMode(mdTramoMode_P07_SituarVVB_finVVB_Avanzar)
-        # Marcamos TramoMode_P08_SeguirVVB_finVVV_giroder como elegible para MisionMode_Engineering
-        mdMisionMode_Engineering.addSubMode(mdTramoMode_P08_SeguirVVB_finVVV_giroder)
-        # Marcamos TramoMode_Engineering como elegible para MisionMode_Engineering
-        mdMisionMode_Engineering.addSubMode(mdTramoMode_Engineering)
-        # Marcamos SituacionMode_NNB_00 como elegible para TramoMode_P00_SituarBNB_finBNB_Avanzar
-        mdTramoMode_P00_SituarBNB_finBNB_Avanzar.addSubMode(mdSituacionMode_NNB_00)
-        # Marcamos SituacionMode_BBB_00 como elegible para TramoMode_P00_SituarBNB_finBNB_Avanzar
-        mdTramoMode_P00_SituarBNB_finBNB_Avanzar.addSubMode(mdSituacionMode_BBB_00)
-        # Marcamos SituacionMode_BNB_00 como elegible para TramoMode_P00_SituarBNB_finBNB_Avanzar
-        mdTramoMode_P00_SituarBNB_finBNB_Avanzar.addSubMode(mdSituacionMode_BNB_00)
-        # Marcamos SituacionMode_NNN_00 como elegible para TramoMode_P00_SituarBNB_finBNB_Avanzar
-        mdTramoMode_P00_SituarBNB_finBNB_Avanzar.addSubMode(mdSituacionMode_NNN_00)
-        # Marcamos SituacionMode_BNN_00 como elegible para TramoMode_P00_SituarBNB_finBNB_Avanzar
-        mdTramoMode_P00_SituarBNB_finBNB_Avanzar.addSubMode(mdSituacionMode_BNN_00)
-        # Marcamos SituacionMode_BBN_00 como elegible para TramoMode_P00_SituarBNB_finBNB_Avanzar
-        mdTramoMode_P00_SituarBNB_finBNB_Avanzar.addSubMode(mdSituacionMode_BBN_00)
-        # Marcamos SituacionMode_NBB_00 como elegible para TramoMode_P00_SituarBNB_finBNB_Avanzar
-        mdTramoMode_P00_SituarBNB_finBNB_Avanzar.addSubMode(mdSituacionMode_NBB_00)
-        # Marcamos SituacionMode_NBN_00 como elegible para TramoMode_P00_SituarBNB_finBNB_Avanzar
-        mdTramoMode_P00_SituarBNB_finBNB_Avanzar.addSubMode(mdSituacionMode_NBN_00)
-        # Marcamos SituacionMode_NNB_01 como elegible para TramoMode_P01_SeguirBNB_finder_giroder_abrir
-        mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.addSubMode(mdSituacionMode_NNB_01)
-        # Marcamos SituacionMode_BBB_01 como elegible para TramoMode_P01_SeguirBNB_finder_giroder_abrir
-        mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.addSubMode(mdSituacionMode_BBB_01)
-        # Marcamos SituacionMode_BNB_01 como elegible para TramoMode_P01_SeguirBNB_finder_giroder_abrir
-        mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.addSubMode(mdSituacionMode_BNB_01)
-        # Marcamos SituacionMode_NNN_01 como elegible para TramoMode_P01_SeguirBNB_finder_giroder_abrir
-        mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.addSubMode(mdSituacionMode_NNN_01)
-        # Marcamos SituacionMode_BNN_01 como elegible para TramoMode_P01_SeguirBNB_finder_giroder_abrir
-        mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.addSubMode(mdSituacionMode_BNN_01)
-        # Marcamos SituacionMode_BBN_01 como elegible para TramoMode_P01_SeguirBNB_finder_giroder_abrir
-        mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.addSubMode(mdSituacionMode_BBN_01)
-        # Marcamos SituacionMode_NBB_01 como elegible para TramoMode_P01_SeguirBNB_finder_giroder_abrir
-        mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.addSubMode(mdSituacionMode_NBB_01)
-        # Marcamos SituacionMode_NBN_01 como elegible para TramoMode_P01_SeguirBNB_finder_giroder_abrir
-        mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.addSubMode(mdSituacionMode_NBN_01)
-        # Marcamos SituacionMode_VBN_01 como elegible para TramoMode_P01_SeguirBNB_finder_giroder_abrir
-        mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.addSubMode(mdSituacionMode_VBN_01)
-        # Marcamos SituacionMode_NBV_01 como elegible para TramoMode_P01_SeguirBNB_finder_giroder_abrir
-        mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.addSubMode(mdSituacionMode_NBV_01)
-        # Marcamos SituacionMode_NNB_02 como elegible para TramoMode_P02_SeguirBNB_finder_giroder
-        mdTramoMode_P02_SeguirBNB_finder_giroder.addSubMode(mdSituacionMode_NNB_02)
-        # Marcamos SituacionMode_BBB_02 como elegible para TramoMode_P02_SeguirBNB_finder_giroder
-        mdTramoMode_P02_SeguirBNB_finder_giroder.addSubMode(mdSituacionMode_BBB_02)
-        # Marcamos SituacionMode_BNB_02 como elegible para TramoMode_P02_SeguirBNB_finder_giroder
-        mdTramoMode_P02_SeguirBNB_finder_giroder.addSubMode(mdSituacionMode_BNB_02)
-        # Marcamos SituacionMode_NNN_02 como elegible para TramoMode_P02_SeguirBNB_finder_giroder
-        mdTramoMode_P02_SeguirBNB_finder_giroder.addSubMode(mdSituacionMode_NNN_02)
-        # Marcamos SituacionMode_BNN_02 como elegible para TramoMode_P02_SeguirBNB_finder_giroder
-        mdTramoMode_P02_SeguirBNB_finder_giroder.addSubMode(mdSituacionMode_BNN_02)
-        # Marcamos SituacionMode_BBN_02 como elegible para TramoMode_P02_SeguirBNB_finder_giroder
-        mdTramoMode_P02_SeguirBNB_finder_giroder.addSubMode(mdSituacionMode_BBN_02)
-        # Marcamos SituacionMode_NBB_02 como elegible para TramoMode_P02_SeguirBNB_finder_giroder
-        mdTramoMode_P02_SeguirBNB_finder_giroder.addSubMode(mdSituacionMode_NBB_02)
-        # Marcamos SituacionMode_NBN_02 como elegible para TramoMode_P02_SeguirBNB_finder_giroder
-        mdTramoMode_P02_SeguirBNB_finder_giroder.addSubMode(mdSituacionMode_NBN_02)
-        # Marcamos SituacionMode_NBV_02 como elegible para TramoMode_P02_SeguirBNB_finder_giroder
-        mdTramoMode_P02_SeguirBNB_finder_giroder.addSubMode(mdSituacionMode_NBV_02)
-        # Marcamos SituacionMode_VBN_02 como elegible para TramoMode_P02_SeguirBNB_finder_giroder
-        mdTramoMode_P02_SeguirBNB_finder_giroder.addSubMode(mdSituacionMode_VBN_02)
-        # Marcamos SituacionMode_BNN_03 como elegible para TramoMode_P03_SeguirBNB_finizq_giroizq
-        mdTramoMode_P03_SeguirBNB_finizq_giroizq.addSubMode(mdSituacionMode_BNN_03)
-        # Marcamos SituacionMode_BBB_03 como elegible para TramoMode_P03_SeguirBNB_finizq_giroizq
-        mdTramoMode_P03_SeguirBNB_finizq_giroizq.addSubMode(mdSituacionMode_BBB_03)
-        # Marcamos SituacionMode_BNB_03 como elegible para TramoMode_P03_SeguirBNB_finizq_giroizq
-        mdTramoMode_P03_SeguirBNB_finizq_giroizq.addSubMode(mdSituacionMode_BNB_03)
-        # Marcamos SituacionMode_NNN_03 como elegible para TramoMode_P03_SeguirBNB_finizq_giroizq
-        mdTramoMode_P03_SeguirBNB_finizq_giroizq.addSubMode(mdSituacionMode_NNN_03)
-        # Marcamos SituacionMode_NNB_03 como elegible para TramoMode_P03_SeguirBNB_finizq_giroizq
-        mdTramoMode_P03_SeguirBNB_finizq_giroizq.addSubMode(mdSituacionMode_NNB_03)
-        # Marcamos SituacionMode_BBN_03 como elegible para TramoMode_P03_SeguirBNB_finizq_giroizq
-        mdTramoMode_P03_SeguirBNB_finizq_giroizq.addSubMode(mdSituacionMode_BBN_03)
-        # Marcamos SituacionMode_NBB_03 como elegible para TramoMode_P03_SeguirBNB_finizq_giroizq
-        mdTramoMode_P03_SeguirBNB_finizq_giroizq.addSubMode(mdSituacionMode_NBB_03)
-        # Marcamos SituacionMode_NBN_03 como elegible para TramoMode_P03_SeguirBNB_finizq_giroizq
-        mdTramoMode_P03_SeguirBNB_finizq_giroizq.addSubMode(mdSituacionMode_NBN_03)
-        # Marcamos SituacionMode_NBV_03 como elegible para TramoMode_P03_SeguirBNB_finizq_giroizq
-        mdTramoMode_P03_SeguirBNB_finizq_giroizq.addSubMode(mdSituacionMode_NBV_03)
-        # Marcamos SituacionMode_VBN_03 como elegible para TramoMode_P03_SeguirBNB_finizq_giroizq
-        mdTramoMode_P03_SeguirBNB_finizq_giroizq.addSubMode(mdSituacionMode_VBN_03)
-        # Marcamos SituacionMode_BNN_04 como elegible para TramoMode_P04_SeguirBNB_fincruce_rect
-        mdTramoMode_P04_SeguirBNB_fincruce_rect.addSubMode(mdSituacionMode_BNN_04)
-        # Marcamos SituacionMode_BBB_04 como elegible para TramoMode_P04_SeguirBNB_fincruce_rect
-        mdTramoMode_P04_SeguirBNB_fincruce_rect.addSubMode(mdSituacionMode_BBB_04)
-        # Marcamos SituacionMode_BNB_04 como elegible para TramoMode_P04_SeguirBNB_fincruce_rect
-        mdTramoMode_P04_SeguirBNB_fincruce_rect.addSubMode(mdSituacionMode_BNB_04)
-        # Marcamos SituacionMode_NNN_04 como elegible para TramoMode_P04_SeguirBNB_fincruce_rect
-        mdTramoMode_P04_SeguirBNB_fincruce_rect.addSubMode(mdSituacionMode_NNN_04)
-        # Marcamos SituacionMode_NNB_04 como elegible para TramoMode_P04_SeguirBNB_fincruce_rect
-        mdTramoMode_P04_SeguirBNB_fincruce_rect.addSubMode(mdSituacionMode_NNB_04)
-        # Marcamos SituacionMode_BBN_04 como elegible para TramoMode_P04_SeguirBNB_fincruce_rect
-        mdTramoMode_P04_SeguirBNB_fincruce_rect.addSubMode(mdSituacionMode_BBN_04)
-        # Marcamos SituacionMode_NBB_04 como elegible para TramoMode_P04_SeguirBNB_fincruce_rect
-        mdTramoMode_P04_SeguirBNB_fincruce_rect.addSubMode(mdSituacionMode_NBB_04)
-        # Marcamos SituacionMode_NBN_04 como elegible para TramoMode_P04_SeguirBNB_fincruce_rect
-        mdTramoMode_P04_SeguirBNB_fincruce_rect.addSubMode(mdSituacionMode_NBN_04)
-        # Marcamos SituacionMode_NBV_04 como elegible para TramoMode_P04_SeguirBNB_fincruce_rect
-        mdTramoMode_P04_SeguirBNB_fincruce_rect.addSubMode(mdSituacionMode_NBV_04)
-        # Marcamos SituacionMode_VBN_04 como elegible para TramoMode_P04_SeguirBNB_fincruce_rect
-        mdTramoMode_P04_SeguirBNB_fincruce_rect.addSubMode(mdSituacionMode_VBN_04)
-        # Marcamos SituacionMode_BNN_05 como elegible para TramoMode_P05_SeguirNNB_finBNB_rect
-        mdTramoMode_P05_SeguirNNB_finBNB_rect.addSubMode(mdSituacionMode_BNN_05)
-        # Marcamos SituacionMode_BBB_05 como elegible para TramoMode_P05_SeguirNNB_finBNB_rect
-        mdTramoMode_P05_SeguirNNB_finBNB_rect.addSubMode(mdSituacionMode_BBB_05)
-        # Marcamos SituacionMode_BNB_05 como elegible para TramoMode_P05_SeguirNNB_finBNB_rect
-        mdTramoMode_P05_SeguirNNB_finBNB_rect.addSubMode(mdSituacionMode_BNB_05)
-        # Marcamos SituacionMode_NNN_05 como elegible para TramoMode_P05_SeguirNNB_finBNB_rect
-        mdTramoMode_P05_SeguirNNB_finBNB_rect.addSubMode(mdSituacionMode_NNN_05)
-        # Marcamos SituacionMode_NNB_05 como elegible para TramoMode_P05_SeguirNNB_finBNB_rect
-        mdTramoMode_P05_SeguirNNB_finBNB_rect.addSubMode(mdSituacionMode_NNB_05)
-        # Marcamos SituacionMode_BBN_05 como elegible para TramoMode_P05_SeguirNNB_finBNB_rect
-        mdTramoMode_P05_SeguirNNB_finBNB_rect.addSubMode(mdSituacionMode_BBN_05)
-        # Marcamos SituacionMode_NBB_05 como elegible para TramoMode_P05_SeguirNNB_finBNB_rect
-        mdTramoMode_P05_SeguirNNB_finBNB_rect.addSubMode(mdSituacionMode_NBB_05)
-        # Marcamos SituacionMode_NBN_05 como elegible para TramoMode_P05_SeguirNNB_finBNB_rect
-        mdTramoMode_P05_SeguirNNB_finBNB_rect.addSubMode(mdSituacionMode_NBN_05)
-        # Marcamos SituacionMode_BNN_06 como elegible para TramoMode_P06_SeguirBNB_finizq_giroder
-        mdTramoMode_P06_SeguirBNB_finizq_giroder.addSubMode(mdSituacionMode_BNN_06)
-        # Marcamos SituacionMode_BBB_06 como elegible para TramoMode_P06_SeguirBNB_finizq_giroder
-        mdTramoMode_P06_SeguirBNB_finizq_giroder.addSubMode(mdSituacionMode_BBB_06)
-        # Marcamos SituacionMode_BNB_06 como elegible para TramoMode_P06_SeguirBNB_finizq_giroder
-        mdTramoMode_P06_SeguirBNB_finizq_giroder.addSubMode(mdSituacionMode_BNB_06)
-        # Marcamos SituacionMode_NNN_06 como elegible para TramoMode_P06_SeguirBNB_finizq_giroder
-        mdTramoMode_P06_SeguirBNB_finizq_giroder.addSubMode(mdSituacionMode_NNN_06)
-        # Marcamos SituacionMode_NNB_06 como elegible para TramoMode_P06_SeguirBNB_finizq_giroder
-        mdTramoMode_P06_SeguirBNB_finizq_giroder.addSubMode(mdSituacionMode_NNB_06)
-        # Marcamos SituacionMode_BBN_06 como elegible para TramoMode_P06_SeguirBNB_finizq_giroder
-        mdTramoMode_P06_SeguirBNB_finizq_giroder.addSubMode(mdSituacionMode_BBN_06)
-        # Marcamos SituacionMode_NBB_06 como elegible para TramoMode_P06_SeguirBNB_finizq_giroder
-        mdTramoMode_P06_SeguirBNB_finizq_giroder.addSubMode(mdSituacionMode_NBB_06)
-        # Marcamos SituacionMode_NBN_06 como elegible para TramoMode_P06_SeguirBNB_finizq_giroder
-        mdTramoMode_P06_SeguirBNB_finizq_giroder.addSubMode(mdSituacionMode_NBN_06)
-        # Marcamos SituacionMode_NBV_06 como elegible para TramoMode_P06_SeguirBNB_finizq_giroder
-        mdTramoMode_P06_SeguirBNB_finizq_giroder.addSubMode(mdSituacionMode_NBV_06)
-        # Marcamos SituacionMode_BNN_07 como elegible para TramoMode_P07_SituarVVB_finVVB_Avanzar
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar.addSubMode(mdSituacionMode_BNN_07)
-        # Marcamos SituacionMode_BBB_07 como elegible para TramoMode_P07_SituarVVB_finVVB_Avanzar
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar.addSubMode(mdSituacionMode_BBB_07)
-        # Marcamos SituacionMode_BNB_07 como elegible para TramoMode_P07_SituarVVB_finVVB_Avanzar
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar.addSubMode(mdSituacionMode_BNB_07)
-        # Marcamos SituacionMode_NNN_07 como elegible para TramoMode_P07_SituarVVB_finVVB_Avanzar
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar.addSubMode(mdSituacionMode_NNN_07)
-        # Marcamos SituacionMode_NNB_07 como elegible para TramoMode_P07_SituarVVB_finVVB_Avanzar
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar.addSubMode(mdSituacionMode_NNB_07)
-        # Marcamos SituacionMode_BBN_07 como elegible para TramoMode_P07_SituarVVB_finVVB_Avanzar
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar.addSubMode(mdSituacionMode_BBN_07)
-        # Marcamos SituacionMode_NBB_07 como elegible para TramoMode_P07_SituarVVB_finVVB_Avanzar
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar.addSubMode(mdSituacionMode_NBB_07)
-        # Marcamos SituacionMode_NBN_07 como elegible para TramoMode_P07_SituarVVB_finVVB_Avanzar
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar.addSubMode(mdSituacionMode_NBN_07)
-        # Marcamos SituacionMode_VBN_07 como elegible para TramoMode_P07_SituarVVB_finVVB_Avanzar
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar.addSubMode(mdSituacionMode_VBN_07)
-        # Marcamos SituacionMode_VVB_07 como elegible para TramoMode_P07_SituarVVB_finVVB_Avanzar
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar.addSubMode(mdSituacionMode_VVB_07)
-        # Marcamos SituacionMode_VVV_07 como elegible para TramoMode_P07_SituarVVB_finVVB_Avanzar
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar.addSubMode(mdSituacionMode_VVV_07)
-        # Marcamos SituacionMode_NBV_07 como elegible para TramoMode_P07_SituarVVB_finVVB_Avanzar
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar.addSubMode(mdSituacionMode_NBV_07)
-        # Marcamos SituacionMode_VBN_08 como elegible para TramoMode_P08_SeguirVVB_finVVV_giroder
-        mdTramoMode_P08_SeguirVVB_finVVV_giroder.addSubMode(mdSituacionMode_VBN_08)
-        # Marcamos SituacionMode_VVB_08 como elegible para TramoMode_P08_SeguirVVB_finVVV_giroder
-        mdTramoMode_P08_SeguirVVB_finVVV_giroder.addSubMode(mdSituacionMode_VVB_08)
-        # Marcamos SituacionMode_VVV_08 como elegible para TramoMode_P08_SeguirVVB_finVVV_giroder
-        mdTramoMode_P08_SeguirVVB_finVVV_giroder.addSubMode(mdSituacionMode_VVV_08)
-        # Marcamos SituacionMode_BNN_00 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNN_00)
-        # Marcamos SituacionMode_NBB_00 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBB_00)
-        # Marcamos SituacionMode_BBB_00 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBB_00)
-        # Marcamos SituacionMode_NNB_00 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNB_00)
-        # Marcamos SituacionMode_BNB_00 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNB_00)
-        # Marcamos SituacionMode_NBN_00 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBN_00)
-        # Marcamos SituacionMode_BBN_00 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBN_00)
-        # Marcamos SituacionMode_NNN_00 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNN_00)
-        # Marcamos SituacionMode_NBV_01 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBV_01)
-        # Marcamos SituacionMode_BNB_01 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNB_01)
-        # Marcamos SituacionMode_BBB_01 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBB_01)
-        # Marcamos SituacionMode_BNN_01 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNN_01)
-        # Marcamos SituacionMode_NBB_01 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBB_01)
-        # Marcamos SituacionMode_NNB_01 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNB_01)
-        # Marcamos SituacionMode_VBN_01 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_VBN_01)
-        # Marcamos SituacionMode_BBN_01 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBN_01)
-        # Marcamos SituacionMode_NNN_01 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNN_01)
-        # Marcamos SituacionMode_NBN_01 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBN_01)
-        # Marcamos SituacionMode_BBB_02 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBB_02)
-        # Marcamos SituacionMode_BBN_02 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBN_02)
-        # Marcamos SituacionMode_BNB_02 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNB_02)
-        # Marcamos SituacionMode_BNN_02 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNN_02)
-        # Marcamos SituacionMode_NBB_02 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBB_02)
-        # Marcamos SituacionMode_NBN_02 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBN_02)
-        # Marcamos SituacionMode_NBV_02 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBV_02)
-        # Marcamos SituacionMode_NNB_02 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNB_02)
-        # Marcamos SituacionMode_NNN_02 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNN_02)
-        # Marcamos SituacionMode_VBN_02 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_VBN_02)
-        # Marcamos SituacionMode_BBB_03 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBB_03)
-        # Marcamos SituacionMode_BBN_03 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBN_03)
-        # Marcamos SituacionMode_BNB_03 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNB_03)
-        # Marcamos SituacionMode_BNN_03 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNN_03)
-        # Marcamos SituacionMode_NBB_03 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBB_03)
-        # Marcamos SituacionMode_NBN_03 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBN_03)
-        # Marcamos SituacionMode_NBV_03 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBV_03)
-        # Marcamos SituacionMode_NNB_03 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNB_03)
-        # Marcamos SituacionMode_NNN_03 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNN_03)
-        # Marcamos SituacionMode_VBN_03 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_VBN_03)
-        # Marcamos SituacionMode_BBB_04 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBB_04)
-        # Marcamos SituacionMode_BBN_04 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBN_04)
-        # Marcamos SituacionMode_BNB_04 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNB_04)
-        # Marcamos SituacionMode_BNN_04 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNN_04)
-        # Marcamos SituacionMode_NBB_04 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBB_04)
-        # Marcamos SituacionMode_NBN_04 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBN_04)
-        # Marcamos SituacionMode_NBV_04 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBV_04)
-        # Marcamos SituacionMode_NNB_04 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNB_04)
-        # Marcamos SituacionMode_NNN_04 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNN_04)
-        # Marcamos SituacionMode_VBN_04 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_VBN_04)
-        # Marcamos SituacionMode_BBB_05 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBB_05)
-        # Marcamos SituacionMode_BBN_05 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBN_05)
-        # Marcamos SituacionMode_BNB_05 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNB_05)
-        # Marcamos SituacionMode_BNN_05 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNN_05)
-        # Marcamos SituacionMode_NBB_05 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBB_05)
-        # Marcamos SituacionMode_NBN_05 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBN_05)
-        # Marcamos SituacionMode_NNB_05 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNB_05)
-        # Marcamos SituacionMode_NNN_05 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNN_05)
-        # Marcamos SituacionMode_VBN_06 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_VBN_06)
-        # Marcamos SituacionMode_NBB_06 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBB_06)
-        # Marcamos SituacionMode_BNB_06 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNB_06)
-        # Marcamos SituacionMode_NBN_06 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBN_06)
-        # Marcamos SituacionMode_NNN_06 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNN_06)
-        # Marcamos SituacionMode_BNN_06 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNN_06)
-        # Marcamos SituacionMode_BBN_06 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBN_06)
-        # Marcamos SituacionMode_BBB_06 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBB_06)
-        # Marcamos SituacionMode_NBV_06 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBV_06)
-        # Marcamos SituacionMode_NNB_06 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNB_06)
-        # Marcamos SituacionMode_BBB_07 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBB_07)
-        # Marcamos SituacionMode_BBN_07 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BBN_07)
-        # Marcamos SituacionMode_BNB_07 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNB_07)
-        # Marcamos SituacionMode_BNN_07 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_BNN_07)
-        # Marcamos SituacionMode_NBB_07 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBB_07)
-        # Marcamos SituacionMode_NBN_07 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBN_07)
-        # Marcamos SituacionMode_NBV_07 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NBV_07)
-        # Marcamos SituacionMode_NNB_07 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNB_07)
-        # Marcamos SituacionMode_NNN_07 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_NNN_07)
-        # Marcamos SituacionMode_VBN_07 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_VBN_07)
-        # Marcamos SituacionMode_VVB_07 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_VVB_07)
-        # Marcamos SituacionMode_VVV_07 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_VVV_07)
-        # Marcamos SituacionMode_VVV_08 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_VVV_08)
-        # Marcamos SituacionMode_VBN_08 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_VBN_08)
-        # Marcamos SituacionMode_VVB_08 como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_VVB_08)
-        # Marcamos SituacionMode_Engineering como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdSituacionMode_Engineering)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_BNN_00
-        mdSituacionMode_BNN_00.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_CompasIzq como elegible para SituacionMode_NBB_00
-        mdSituacionMode_NBB_00.addSubMode(mdDecisionMovimientoMode_CompasIzq)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_BBB_00
-        mdSituacionMode_BBB_00.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_CompasIzq como elegible para SituacionMode_NNB_00
-        mdSituacionMode_NNB_00.addSubMode(mdDecisionMovimientoMode_CompasIzq)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_BNB_00
-        mdSituacionMode_BNB_00.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_NBN_00
-        mdSituacionMode_NBN_00.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_BBN_00
-        mdSituacionMode_BBN_00.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_NNN_00
-        mdSituacionMode_NNN_00.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_GirarIzq como elegible para SituacionMode_NBV_01
-        mdSituacionMode_NBV_01.addSubMode(mdDecisionMovimientoMode_GirarIzq)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_BNB_01
-        mdSituacionMode_BNB_01.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_Parar como elegible para SituacionMode_BBB_01
-        mdSituacionMode_BBB_01.addSubMode(mdDecisionMovimientoMode_Parar)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_BNN_01
-        mdSituacionMode_BNN_01.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_CompasIzq como elegible para SituacionMode_NBB_01
-        mdSituacionMode_NBB_01.addSubMode(mdDecisionMovimientoMode_CompasIzq)
-        # Marcamos DecisionMovimientoMode_CompasIzq como elegible para SituacionMode_NNB_01
-        mdSituacionMode_NNB_01.addSubMode(mdDecisionMovimientoMode_CompasIzq)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_VBN_01
-        mdSituacionMode_VBN_01.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_BBN_01
-        mdSituacionMode_BBN_01.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_NNN_01
-        mdSituacionMode_NNN_01.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_Parar como elegible para SituacionMode_NBN_01
-        mdSituacionMode_NBN_01.addSubMode(mdDecisionMovimientoMode_Parar)
-        # Marcamos DecisionMovimientoMode_Parar como elegible para SituacionMode_BBB_02
-        mdSituacionMode_BBB_02.addSubMode(mdDecisionMovimientoMode_Parar)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_BBN_02
-        mdSituacionMode_BBN_02.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_BNB_02
-        mdSituacionMode_BNB_02.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_BNN_02
-        mdSituacionMode_BNN_02.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_CompasIzq como elegible para SituacionMode_NBB_02
-        mdSituacionMode_NBB_02.addSubMode(mdDecisionMovimientoMode_CompasIzq)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_NBN_02
-        mdSituacionMode_NBN_02.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_GirarIzq como elegible para SituacionMode_NBV_02
-        mdSituacionMode_NBV_02.addSubMode(mdDecisionMovimientoMode_GirarIzq)
-        # Marcamos DecisionMovimientoMode_CompasIzq como elegible para SituacionMode_NNB_02
-        mdSituacionMode_NNB_02.addSubMode(mdDecisionMovimientoMode_CompasIzq)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_NNN_02
-        mdSituacionMode_NNN_02.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_VBN_02
-        mdSituacionMode_VBN_02.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_Parar como elegible para SituacionMode_BBB_03
-        mdSituacionMode_BBB_03.addSubMode(mdDecisionMovimientoMode_Parar)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_BBN_03
-        mdSituacionMode_BBN_03.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_BNB_03
-        mdSituacionMode_BNB_03.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_BNN_03
-        mdSituacionMode_BNN_03.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_CompasIzq como elegible para SituacionMode_NBB_03
-        mdSituacionMode_NBB_03.addSubMode(mdDecisionMovimientoMode_CompasIzq)
-        # Marcamos DecisionMovimientoMode_Parar como elegible para SituacionMode_NBN_03
-        mdSituacionMode_NBN_03.addSubMode(mdDecisionMovimientoMode_Parar)
-        # Marcamos DecisionMovimientoMode_GirarIzq como elegible para SituacionMode_NBV_03
-        mdSituacionMode_NBV_03.addSubMode(mdDecisionMovimientoMode_GirarIzq)
-        # Marcamos DecisionMovimientoMode_GirarIzq como elegible para SituacionMode_NNB_03
-        mdSituacionMode_NNB_03.addSubMode(mdDecisionMovimientoMode_GirarIzq)
-        # Marcamos DecisionMovimientoMode_GirarIzq como elegible para SituacionMode_NNN_03
-        mdSituacionMode_NNN_03.addSubMode(mdDecisionMovimientoMode_GirarIzq)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_VBN_03
-        mdSituacionMode_VBN_03.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_BBB_04
-        mdSituacionMode_BBB_04.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_BBN_04
-        mdSituacionMode_BBN_04.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_BNB_04
-        mdSituacionMode_BNB_04.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_BNN_04
-        mdSituacionMode_BNN_04.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_CompasIzq como elegible para SituacionMode_NBB_04
-        mdSituacionMode_NBB_04.addSubMode(mdDecisionMovimientoMode_CompasIzq)
-        # Marcamos DecisionMovimientoMode_Parar como elegible para SituacionMode_NBN_04
-        mdSituacionMode_NBN_04.addSubMode(mdDecisionMovimientoMode_Parar)
-        # Marcamos DecisionMovimientoMode_GirarIzq como elegible para SituacionMode_NBV_04
-        mdSituacionMode_NBV_04.addSubMode(mdDecisionMovimientoMode_GirarIzq)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_NNB_04
-        mdSituacionMode_NNB_04.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_NNN_04
-        mdSituacionMode_NNN_04.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_VBN_04
-        mdSituacionMode_VBN_04.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_Parar como elegible para SituacionMode_BBB_05
-        mdSituacionMode_BBB_05.addSubMode(mdDecisionMovimientoMode_Parar)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_BBN_05
-        mdSituacionMode_BBN_05.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_BNB_05
-        mdSituacionMode_BNB_05.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_BNN_05
-        mdSituacionMode_BNN_05.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_CompasIzq como elegible para SituacionMode_NBB_05
-        mdSituacionMode_NBB_05.addSubMode(mdDecisionMovimientoMode_CompasIzq)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_NBN_05
-        mdSituacionMode_NBN_05.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_NNB_05
-        mdSituacionMode_NNB_05.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_NNN_05
-        mdSituacionMode_NNN_05.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_VBN_06
-        mdSituacionMode_VBN_06.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_CompasIzq como elegible para SituacionMode_NBB_06
-        mdSituacionMode_NBB_06.addSubMode(mdDecisionMovimientoMode_CompasIzq)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_BNB_06
-        mdSituacionMode_BNB_06.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_Parar como elegible para SituacionMode_NBN_06
-        mdSituacionMode_NBN_06.addSubMode(mdDecisionMovimientoMode_Parar)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_NNN_06
-        mdSituacionMode_NNN_06.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_BNN_06
-        mdSituacionMode_BNN_06.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_BBN_06
-        mdSituacionMode_BBN_06.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_Parar como elegible para SituacionMode_BBB_06
-        mdSituacionMode_BBB_06.addSubMode(mdDecisionMovimientoMode_Parar)
-        # Marcamos DecisionMovimientoMode_GirarIzq como elegible para SituacionMode_NBV_06
-        mdSituacionMode_NBV_06.addSubMode(mdDecisionMovimientoMode_GirarIzq)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_NNB_06
-        mdSituacionMode_NNB_06.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_BBB_07
-        mdSituacionMode_BBB_07.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_BBN_07
-        mdSituacionMode_BBN_07.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_GirarIzq como elegible para SituacionMode_BNB_07
-        mdSituacionMode_BNB_07.addSubMode(mdDecisionMovimientoMode_GirarIzq)
-        # Marcamos DecisionMovimientoMode_GirarIzq como elegible para SituacionMode_BNN_07
-        mdSituacionMode_BNN_07.addSubMode(mdDecisionMovimientoMode_GirarIzq)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_NBB_07
-        mdSituacionMode_NBB_07.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_NBN_07
-        mdSituacionMode_NBN_07.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_Parar como elegible para SituacionMode_NBV_07
-        mdSituacionMode_NBV_07.addSubMode(mdDecisionMovimientoMode_Parar)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_NNB_07
-        mdSituacionMode_NNB_07.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_NNN_07
-        mdSituacionMode_NNN_07.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_CompasIzq como elegible para SituacionMode_VBN_07
-        mdSituacionMode_VBN_07.addSubMode(mdDecisionMovimientoMode_CompasIzq)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_VVB_07
-        mdSituacionMode_VVB_07.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_VVV_07
-        mdSituacionMode_VVV_07.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_VVV_08
-        mdSituacionMode_VVV_08.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_CompasIzq como elegible para SituacionMode_VBN_08
-        mdSituacionMode_VBN_08.addSubMode(mdDecisionMovimientoMode_CompasIzq)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_VVB_08
-        mdSituacionMode_VVB_08.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_Avanzar como elegible para SituacionMode_Engineering
-        mdSituacionMode_Engineering.addSubMode(mdDecisionMovimientoMode_Avanzar)
-        # Marcamos DecisionMovimientoMode_CompasIzq como elegible para SituacionMode_Engineering
-        mdSituacionMode_Engineering.addSubMode(mdDecisionMovimientoMode_CompasIzq)
-        # Marcamos DecisionMovimientoMode_CompasDer como elegible para SituacionMode_Engineering
-        mdSituacionMode_Engineering.addSubMode(mdDecisionMovimientoMode_CompasDer)
-        # Marcamos DecisionMovimientoMode_GirarDer como elegible para SituacionMode_Engineering
-        mdSituacionMode_Engineering.addSubMode(mdDecisionMovimientoMode_GirarDer)
-        # Marcamos DecisionMovimientoMode_GirarIzq como elegible para SituacionMode_Engineering
-        mdSituacionMode_Engineering.addSubMode(mdDecisionMovimientoMode_GirarIzq)
-        # Marcamos DecisionMovimientoMode_Parar como elegible para SituacionMode_Engineering
-        mdSituacionMode_Engineering.addSubMode(mdDecisionMovimientoMode_Parar)
-        # Marcamos DecisionMovimientoMode_Engineering como elegible para SituacionMode_Engineering
-        mdSituacionMode_Engineering.addSubMode(mdDecisionMovimientoMode_Engineering)
-        # Marcamos RuedaDerMode_Avanzar como elegible para DecisionMovimientoMode_Avanzar
-        mdDecisionMovimientoMode_Avanzar.addSubMode(mdRuedaDerMode_Avanzar)
-        # Marcamos RuedaDerMode_Avanzar como elegible para DecisionMovimientoMode_CompasIzq
-        mdDecisionMovimientoMode_CompasIzq.addSubMode(mdRuedaDerMode_Avanzar)
-        # Marcamos RuedaDerMode_Parada como elegible para DecisionMovimientoMode_CompasDer
-        mdDecisionMovimientoMode_CompasDer.addSubMode(mdRuedaDerMode_Parada)
-        # Marcamos RuedaDerMode_Retroceder como elegible para DecisionMovimientoMode_GirarDer
-        mdDecisionMovimientoMode_GirarDer.addSubMode(mdRuedaDerMode_Retroceder)
-        # Marcamos RuedaDerMode_Avanzar como elegible para DecisionMovimientoMode_GirarIzq
-        mdDecisionMovimientoMode_GirarIzq.addSubMode(mdRuedaDerMode_Avanzar)
-        # Marcamos RuedaDerMode_Parada como elegible para DecisionMovimientoMode_Parar
-        mdDecisionMovimientoMode_Parar.addSubMode(mdRuedaDerMode_Parada)
-        # Marcamos RuedaDerMode_Parada como elegible para DecisionMovimientoMode_Engineering
-        mdDecisionMovimientoMode_Engineering.addSubMode(mdRuedaDerMode_Parada)
-        # Marcamos RuedaDerMode_Avanzar como elegible para DecisionMovimientoMode_Engineering
-        mdDecisionMovimientoMode_Engineering.addSubMode(mdRuedaDerMode_Avanzar)
-        # Marcamos RuedaDerMode_Retroceder como elegible para DecisionMovimientoMode_Engineering
-        mdDecisionMovimientoMode_Engineering.addSubMode(mdRuedaDerMode_Retroceder)
-        # Marcamos RuedaDer_Quieta como elegible para RuedaDerMode_Parada
-        mdRuedaDerMode_Parada.addValue(vlRuedaDer_Quieta)
-        # Marcamos RuedaDer_Adelante como elegible para RuedaDerMode_Avanzar
-        mdRuedaDerMode_Avanzar.addValue(vlRuedaDer_Adelante)
-        # Marcamos RuedaDer_Atras como elegible para RuedaDerMode_Retroceder
-        mdRuedaDerMode_Retroceder.addValue(vlRuedaDer_Atras)
-        # Marcamos RuedaIzqMode_Avanzar como elegible para DecisionMovimientoMode_Avanzar
-        mdDecisionMovimientoMode_Avanzar.addSubMode(mdRuedaIzqMode_Avanzar)
-        # Marcamos RuedaIzqMode_Parada como elegible para DecisionMovimientoMode_CompasIzq
-        mdDecisionMovimientoMode_CompasIzq.addSubMode(mdRuedaIzqMode_Parada)
-        # Marcamos RuedaIzqMode_Avanzar como elegible para DecisionMovimientoMode_CompasDer
-        mdDecisionMovimientoMode_CompasDer.addSubMode(mdRuedaIzqMode_Avanzar)
-        # Marcamos RuedaIzqMode_Avanzar como elegible para DecisionMovimientoMode_GirarDer
-        mdDecisionMovimientoMode_GirarDer.addSubMode(mdRuedaIzqMode_Avanzar)
-        # Marcamos RuedaIzqMode_Retroceder como elegible para DecisionMovimientoMode_GirarIzq
-        mdDecisionMovimientoMode_GirarIzq.addSubMode(mdRuedaIzqMode_Retroceder)
-        # Marcamos RuedaIzqMode_Parada como elegible para DecisionMovimientoMode_Parar
-        mdDecisionMovimientoMode_Parar.addSubMode(mdRuedaIzqMode_Parada)
-        # Marcamos RuedaIzqMode_Parada como elegible para DecisionMovimientoMode_Engineering
-        mdDecisionMovimientoMode_Engineering.addSubMode(mdRuedaIzqMode_Parada)
-        # Marcamos RuedaIzqMode_Avanzar como elegible para DecisionMovimientoMode_Engineering
-        mdDecisionMovimientoMode_Engineering.addSubMode(mdRuedaIzqMode_Avanzar)
-        # Marcamos RuedaIzqMode_Retroceder como elegible para DecisionMovimientoMode_Engineering
-        mdDecisionMovimientoMode_Engineering.addSubMode(mdRuedaIzqMode_Retroceder)
-        # Marcamos RuedaIzq_Quieta como elegible para RuedaIzqMode_Parada
-        mdRuedaIzqMode_Parada.addValue(vlRuedaIzq_Quieta)
-        # Marcamos RuedaIzq_Adelante como elegible para RuedaIzqMode_Avanzar
-        mdRuedaIzqMode_Avanzar.addValue(vlRuedaIzq_Adelante)
-        # Marcamos RuedaIzq_Atras como elegible para RuedaIzqMode_Retroceder
-        mdRuedaIzqMode_Retroceder.addValue(vlRuedaIzq_Atras)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_BNB_00
-        mdSituacionMode_BNB_00.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_BNN_01
-        mdSituacionMode_BNN_01.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_NNN_01
-        mdSituacionMode_NNN_01.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_BNN_02
-        mdSituacionMode_BNN_02.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_NNN_02
-        mdSituacionMode_NNN_02.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_NNB_03
-        mdSituacionMode_NNB_03.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_NNN_03
-        mdSituacionMode_NNN_03.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_NNB_04
-        mdSituacionMode_NNB_04.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_NNN_04
-        mdSituacionMode_NNN_04.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_BNB_05
-        mdSituacionMode_BNB_05.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_NNN_06
-        mdSituacionMode_NNN_06.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_NNB_06
-        mdSituacionMode_NNB_06.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_VVB_07
-        mdSituacionMode_VVB_07.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_VVV_08
-        mdSituacionMode_VVV_08.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos NuevoPasoMode_Si como elegible para SituacionMode_Engineering
-        mdSituacionMode_Engineering.addSubMode(mdNuevoPasoMode_Si)
-        # Marcamos DecisionSeguidorMode_BNB como elegible para SituacionMode_BNB_01
-        mdSituacionMode_BNB_01.addSubMode(mdDecisionSeguidorMode_BNB)
-        # Marcamos DecisionSeguidorMode_BNB como elegible para SituacionMode_BNB_02
-        mdSituacionMode_BNB_02.addSubMode(mdDecisionSeguidorMode_BNB)
-        # Marcamos DecisionSeguidorMode_BNB como elegible para SituacionMode_BNB_03
-        mdSituacionMode_BNB_03.addSubMode(mdDecisionSeguidorMode_BNB)
-        # Marcamos DecisionSeguidorMode_BNB como elegible para SituacionMode_BNB_04
-        mdSituacionMode_BNB_04.addSubMode(mdDecisionSeguidorMode_BNB)
-        # Marcamos DecisionSeguidorMode_BNB como elegible para SituacionMode_BNB_05
-        mdSituacionMode_BNB_05.addSubMode(mdDecisionSeguidorMode_BNB)
-        # Marcamos DecisionSeguidorMode_BNB como elegible para SituacionMode_BNB_06
-        mdSituacionMode_BNB_06.addSubMode(mdDecisionSeguidorMode_BNB)
-        # Marcamos DecisionSeguidorMode_VVB como elegible para SituacionMode_VVB_07
-        mdSituacionMode_VVB_07.addSubMode(mdDecisionSeguidorMode_VVB)
-        # Marcamos DecisionSeguidorMode_VVB como elegible para SituacionMode_VVB_08
-        mdSituacionMode_VVB_08.addSubMode(mdDecisionSeguidorMode_VVB)
-        # Marcamos DecisionSeguidorMode_BNB como elegible para SituacionMode_Engineering
-        mdSituacionMode_Engineering.addSubMode(mdDecisionSeguidorMode_BNB)
-        # Marcamos DecisionSeguidorMode_VVB como elegible para SituacionMode_Engineering
-        mdSituacionMode_Engineering.addSubMode(mdDecisionSeguidorMode_VVB)
-        # Marcamos DecisionAparejoMode_Cerrado como elegible para TramoMode_P00_SituarBNB_finBNB_Avanzar
-        mdTramoMode_P00_SituarBNB_finBNB_Avanzar.addSubMode(mdDecisionAparejoMode_Cerrado)
-        # Marcamos DecisionAparejoMode_Cerrado como elegible para TramoMode_P01_SeguirBNB_finder_giroder_abrir
-        mdTramoMode_P01_SeguirBNB_finder_giroder_abrir.addSubMode(mdDecisionAparejoMode_Cerrado)
-        # Marcamos DecisionAparejoMode_Abierto como elegible para TramoMode_P02_SeguirBNB_finder_giroder
-        mdTramoMode_P02_SeguirBNB_finder_giroder.addSubMode(mdDecisionAparejoMode_Abierto)
-        # Marcamos DecisionAparejoMode_Abierto como elegible para TramoMode_P03_SeguirBNB_finizq_giroizq
-        mdTramoMode_P03_SeguirBNB_finizq_giroizq.addSubMode(mdDecisionAparejoMode_Abierto)
-        # Marcamos DecisionAparejoMode_Abierto como elegible para TramoMode_P04_SeguirBNB_fincruce_rect
-        mdTramoMode_P04_SeguirBNB_fincruce_rect.addSubMode(mdDecisionAparejoMode_Abierto)
-        # Marcamos DecisionAparejoMode_Abierto como elegible para TramoMode_P05_SeguirNNB_finBNB_rect
-        mdTramoMode_P05_SeguirNNB_finBNB_rect.addSubMode(mdDecisionAparejoMode_Abierto)
-        # Marcamos DecisionAparejoMode_Abierto como elegible para TramoMode_P06_SeguirBNB_finizq_giroder
-        mdTramoMode_P06_SeguirBNB_finizq_giroder.addSubMode(mdDecisionAparejoMode_Abierto)
-        # Marcamos DecisionAparejoMode_Abierto como elegible para TramoMode_P07_SituarVVB_finVVB_Avanzar
-        mdTramoMode_P07_SituarVVB_finVVB_Avanzar.addSubMode(mdDecisionAparejoMode_Abierto)
-        # Marcamos DecisionAparejoMode_Abierto como elegible para TramoMode_P08_SeguirVVB_finVVV_giroder
-        mdTramoMode_P08_SeguirVVB_finVVV_giroder.addSubMode(mdDecisionAparejoMode_Abierto)
-        # Marcamos DecisionAparejoMode_Abierto como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdDecisionAparejoMode_Abierto)
-        # Marcamos DecisionAparejoMode_Medio como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdDecisionAparejoMode_Medio)
-        # Marcamos DecisionAparejoMode_Cerrado como elegible para TramoMode_Engineering
-        mdTramoMode_Engineering.addSubMode(mdDecisionAparejoMode_Cerrado)
-
+class csysWROPR:
+	def __init__(self):
+		self.sysMision = PRSys("Mision")
+		self.mdMisionUNK = PRMode("UNK")
+		self.root = self.sysMision
+		self.mdMisionNormal = PRMode("Normal")
+		self.sysTr = PRSys("Tr")
+		self.mdTrUNK = PRMode("UNK")
+		self.mdP00  = PRMode("P00")
+		self.mdP01  = PRMode("P01")
+		self.mdP02  = PRMode("P02")
+		self.mdP03  = PRMode("P03")
+		self.mdP04  = PRMode("P04")
+		self.mdP05  = PRMode("P05")
+		self.mdP06  = PRMode("P06")
+		self.mdP07  = PRMode("P07")
+		self.mdP08  = PRMode("P08_")
+		self.sysSit = PRSys("Situacion")
+		self.mdUNK = PRMode("UNK")
+		self.mdBNN00 = PRMode("BNN")
+		self.mdNBB00 = PRMode("NBB")
+		self.mdBBB00 = PRMode("BBB")
+		self.mdNNB00 = PRMode("NNB")
+		self.mdBNB00 = PRMode("BNB")
+		self.mdNBN00 = PRMode("NBN")
+		self.mdBBN00 = PRMode("BBN")
+		self.mdNNN00 = PRMode("NNN")
+		self.mdNBV01 = PRMode("NBV")
+		self.mdBNB01 = PRMode("BNB")
+		self.mdBBB01 = PRMode("BBB")
+		self.mdBNN01 = PRMode("BNN")
+		self.mdNBB01 = PRMode("NBB")
+		self.mdNNB01 = PRMode("NNB")
+		self.mdVBN01 = PRMode("VBN")
+		self.mdBBN01 = PRMode("BBN")
+		self.mdNNN01 = PRMode("NNN")
+		self.mdNBN01 = PRMode("NBN")
+		self.mdBBB02 = PRMode("BBB")
+		self.mdBBN02 = PRMode("BBN")
+		self.mdBNB02 = PRMode("BNB")
+		self.mdBNN02 = PRMode("BNN")
+		self.mdNBB02 = PRMode("NBB")
+		self.mdNBN02 = PRMode("NBN")
+		self.mdNBV02 = PRMode("NBV")
+		self.mdNNB02 = PRMode("NNB")
+		self.mdNNN02 = PRMode("NNN")
+		self.mdVBN02 = PRMode("VBN")
+		self.mdBBB03 = PRMode("BBB")
+		self.mdBBN03 = PRMode("BBN")
+		self.mdBNB03 = PRMode("BNB")
+		self.mdBNN03 = PRMode("BNN")
+		self.mdNBB03 = PRMode("NBB")
+		self.mdNBN03 = PRMode("NBN")
+		self.mdNBV03 = PRMode("NBV")
+		self.mdNNB03 = PRMode("NNB")
+		self.mdNNN03 = PRMode("NNN")
+		self.mdVBN03 = PRMode("VBN")
+		self.mdBBB04 = PRMode("BBB")
+		self.mdBBN04 = PRMode("BBN")
+		self.mdBNB04 = PRMode("BNB")
+		self.mdBNN04 = PRMode("BNN")
+		self.mdNBB04 = PRMode("NBB")
+		self.mdNBN04 = PRMode("NBN")
+		self.mdNBV04 = PRMode("NBV")
+		self.mdNNB04 = PRMode("NNB")
+		self.mdNNN04 = PRMode("NNN")
+		self.mdVBN04 = PRMode("VBN")
+		self.mdBBB05 = PRMode("BBB")
+		self.mdBBN05 = PRMode("BBN")
+		self.mdBNB05 = PRMode("BNB")
+		self.mdBNN05 = PRMode("BNN")
+		self.mdNBB05 = PRMode("NBB")
+		self.mdNBN05 = PRMode("NBN")
+		self.mdNNB05 = PRMode("NNB")
+		self.mdNNN05 = PRMode("NNN")
+		self.mdVBN06 = PRMode("VBN")
+		self.mdNBB06 = PRMode("NBB")
+		self.mdBNB06 = PRMode("BNB")
+		self.mdNBN06 = PRMode("NBN")
+		self.mdNNN06 = PRMode("NNN")
+		self.mdBNN06 = PRMode("BNN")
+		self.mdBBN06 = PRMode("BBN")
+		self.mdBBB06 = PRMode("BBB")
+		self.mdNBV06 = PRMode("NBV")
+		self.mdNNB06 = PRMode("NNB")
+		self.mdBBB07 = PRMode("BBB")
+		self.mdBBN07 = PRMode("BBN")
+		self.mdBNB07 = PRMode("BNB")
+		self.mdBNN07 = PRMode("BNN")
+		self.mdNBB07 = PRMode("NBB")
+		self.mdNBN07 = PRMode("NBN")
+		self.mdNBV07 = PRMode("NBV")
+		self.mdNNB07 = PRMode("NNB")
+		self.mdNNN07 = PRMode("NNN")
+		self.mdVBN07 = PRMode("VBN")
+		self.mdVVB07 = PRMode("VVB")
+		self.mdVVV07 = PRMode("VVV")
+		self.mdVVV08 = PRMode("VVV")
+		self.mdVBN08 = PRMode("VBN")
+		self.mdVVB08 = PRMode("VVB")
+		self.sysDecMov = PRSys("DecMov")
+		self.mdDecMvUNK = PRMode("UNK")
+		self.mdDecMvFw = PRMode("Fw")
+		self.mdCompIzq = PRMode("CompIzq")
+		self.mdCompDer = PRMode("CompDer")
+		self.mdGirarDer = PRMode("GirarDer")
+		self.mdGirarIzq = PRMode("GirarIzq")
+		self.mdStp = PRMode("Stp")
+		self.prRdDer = PRParam("RdDer")
+		self.mdRdDerUNK = PRMode("UNK")
+		self.vlRdDer_UNK = PRValue("UNK")
+		self.mdRdDerStp = PRMode("Stp")
+		self.mdRdDerFw = PRMode("Fw")
+		self.mdRdDerBw = PRMode("Bw")
+		self.vlRdDer_Stp = PRValue("Stp")
+		self.vlRdDer_Fw = PRValue("Fw")
+		self.vlRdDer_Bw = PRValue("Bw")
+		self.prRdIzq = PRParam("RdIzq")
+		self.mdRdIzqUNK = PRMode("UNK")
+		self.vlRdIzq_UNK = PRValue("UNK")
+		self.mdRdIzqStp = PRMode("Stp")
+		self.mdRdIzqFw = PRMode("Fw")
+		self.mdRdIzqBw = PRMode("Bw")
+		self.vlRdIzq_Stp = PRValue("Stp")
+		self.vlRdIzq_Fw = PRValue("Fw")
+		self.vlRdIzq_Bw = PRValue("Bw")
+		self.sysNext = PRSys("Next")
+		self.mdNextUNK = PRMode("UNK")
+		self.mdNextSi = PRMode("Si")
+		self.sysDecSeg = PRSys("DecSeg")
+		self.mdDecSegUNK = PRMode("UNK")
+		self.mdDecSegBNB = PRMode("BNB")
+		self.mdDecSegVVB = PRMode("VVB")
+		self.sysDecAp = PRSys("DecAp")
+		self.mdDecApUNK = PRMode("UNK")
+		self.mdDecApAbi = PRMode("Abi")
+		self.mdDecApMedio = PRMode("Medio")
+		self.mdDecApCerr = PRMode("Cerr")
+		self.sysMision.aM(self.mdMisionUNK)
+		self.sysMision.aM(self.mdMisionNormal)
+		self.sysMision.aSS(self.sysTr)
+		self.sysTr.aM(self.mdTrUNK)
+		self.sysTr.aM(self.mdP00)
+		self.sysTr.aM(self.mdP01)
+		self.sysTr.aM(self.mdP02)
+		self.sysTr.aM(self.mdP03)
+		self.sysTr.aM(self.mdP04)
+		self.sysTr.aM(self.mdP05)
+		self.sysTr.aM(self.mdP06)
+		self.sysTr.aM(self.mdP07)
+		self.sysTr.aM(self.mdP08)
+		self.sysTr.aSS(self.sysSit)
+		self.sysSit.aM(self.mdUNK)
+		self.sysSit.aM(self.mdBNN00)
+		self.sysSit.aM(self.mdNBB00)
+		self.sysSit.aM(self.mdBBB00)
+		self.sysSit.aM(self.mdNNB00)
+		self.sysSit.aM(self.mdBNB00)
+		self.sysSit.aM(self.mdNBN00)
+		self.sysSit.aM(self.mdBBN00)
+		self.sysSit.aM(self.mdNNN00)
+		self.sysSit.aM(self.mdNBV01)
+		self.sysSit.aM(self.mdBNB01)
+		self.sysSit.aM(self.mdBBB01)
+		self.sysSit.aM(self.mdBNN01)
+		self.sysSit.aM(self.mdNBB01)
+		self.sysSit.aM(self.mdNNB01)
+		self.sysSit.aM(self.mdVBN01)
+		self.sysSit.aM(self.mdBBN01)
+		self.sysSit.aM(self.mdNNN01)
+		self.sysSit.aM(self.mdNBN01)
+		self.sysSit.aM(self.mdBBB02)
+		self.sysSit.aM(self.mdBBN02)
+		self.sysSit.aM(self.mdBNB02)
+		self.sysSit.aM(self.mdBNN02)
+		self.sysSit.aM(self.mdNBB02)
+		self.sysSit.aM(self.mdNBN02)
+		self.sysSit.aM(self.mdNBV02)
+		self.sysSit.aM(self.mdNNB02)
+		self.sysSit.aM(self.mdNNN02)
+		self.sysSit.aM(self.mdVBN02)
+		self.sysSit.aM(self.mdBBB03)
+		self.sysSit.aM(self.mdBBN03)
+		self.sysSit.aM(self.mdBNB03)
+		self.sysSit.aM(self.mdBNN03)
+		self.sysSit.aM(self.mdNBB03)
+		self.sysSit.aM(self.mdNBN03)
+		self.sysSit.aM(self.mdNBV03)
+		self.sysSit.aM(self.mdNNB03)
+		self.sysSit.aM(self.mdNNN03)
+		self.sysSit.aM(self.mdVBN03)
+		self.sysSit.aM(self.mdBBB04)
+		self.sysSit.aM(self.mdBBN04)
+		self.sysSit.aM(self.mdBNB04)
+		self.sysSit.aM(self.mdBNN04)
+		self.sysSit.aM(self.mdNBB04)
+		self.sysSit.aM(self.mdNBN04)
+		self.sysSit.aM(self.mdNBV04)
+		self.sysSit.aM(self.mdNNB04)
+		self.sysSit.aM(self.mdNNN04)
+		self.sysSit.aM(self.mdVBN04)
+		self.sysSit.aM(self.mdBBB05)
+		self.sysSit.aM(self.mdBBN05)
+		self.sysSit.aM(self.mdBNB05)
+		self.sysSit.aM(self.mdBNN05)
+		self.sysSit.aM(self.mdNBB05)
+		self.sysSit.aM(self.mdNBN05)
+		self.sysSit.aM(self.mdNNB05)
+		self.sysSit.aM(self.mdNNN05)
+		self.sysSit.aM(self.mdVBN06)
+		self.sysSit.aM(self.mdNBB06)
+		self.sysSit.aM(self.mdBNB06)
+		self.sysSit.aM(self.mdNBN06)
+		self.sysSit.aM(self.mdNNN06)
+		self.sysSit.aM(self.mdBNN06)
+		self.sysSit.aM(self.mdBBN06)
+		self.sysSit.aM(self.mdBBB06)
+		self.sysSit.aM(self.mdNBV06)
+		self.sysSit.aM(self.mdNNB06)
+		self.sysSit.aM(self.mdBBB07)
+		self.sysSit.aM(self.mdBBN07)
+		self.sysSit.aM(self.mdBNB07)
+		self.sysSit.aM(self.mdBNN07)
+		self.sysSit.aM(self.mdNBB07)
+		self.sysSit.aM(self.mdNBN07)
+		self.sysSit.aM(self.mdNBV07)
+		self.sysSit.aM(self.mdNNB07)
+		self.sysSit.aM(self.mdNNN07)
+		self.sysSit.aM(self.mdVBN07)
+		self.sysSit.aM(self.mdVVB07)
+		self.sysSit.aM(self.mdVVV07)
+		self.sysSit.aM(self.mdVVV08)
+		self.sysSit.aM(self.mdVBN08)
+		self.sysSit.aM(self.mdVVB08)
+		self.sysSit.aSS(self.sysDecMov)
+		self.sysDecMov.aM(self.mdDecMvUNK)
+		self.sysDecMov.aM(self.mdDecMvFw)
+		self.sysDecMov.aM(self.mdCompIzq)
+		self.sysDecMov.aM(self.mdCompDer)
+		self.sysDecMov.aM(self.mdGirarDer)
+		self.sysDecMov.aM(self.mdGirarIzq)
+		self.sysDecMov.aM(self.mdStp)
+		self.sysDecMov.addParam(self.prRdDer)
+		self.prRdDer.aV(self.vlRdDer_UNK)
+		self.prRdDer.aM(self.mdRdDerUNK)
+		self.mdRdDerUNK.aV(self.vlRdDer_UNK)
+		self.mdDecMvUNK.aSM(self.mdRdDerUNK)
+		self.prRdDer.aM(self.mdStp)
+		self.prRdDer.aM(self.mdRdDerFw)
+		self.prRdDer.aM(self.mdRdDerBw)
+		self.prRdDer.aV(self.vlRdDer_Stp)
+		self.prRdDer.aV(self.vlRdDer_Fw)
+		self.prRdDer.aV(self.vlRdDer_Bw)
+		self.sysDecMov.addParam(self.prRdIzq)
+		self.prRdIzq.aV(self.vlRdIzq_UNK)
+		self.prRdIzq.aM(self.mdRdIzqUNK)
+		self.mdRdIzqUNK.aV(self.vlRdIzq_UNK)
+		self.mdDecMvUNK.aSM(self.mdRdIzqUNK)
+		self.prRdIzq.aM(self.mdStp)
+		self.prRdIzq.aM(self.mdRdIzqFw)
+		self.prRdIzq.aM(self.mdRdIzqBw)
+		self.prRdIzq.aV(self.vlRdIzq_Stp)
+		self.prRdIzq.aV(self.vlRdIzq_Fw)
+		self.prRdIzq.aV(self.vlRdIzq_Bw)
+		self.sysSit.aSS(self.sysNext)
+		self.sysNext.aM(self.mdNextUNK)
+		self.sysNext.aM(self.mdNextSi)
+		self.sysSit.aSS(self.sysDecSeg)
+		self.sysDecSeg.aM(self.mdDecSegUNK)
+		self.sysDecSeg.aM(self.mdDecSegBNB)
+		self.sysDecSeg.aM(self.mdDecSegVVB)
+		self.sysTr.aSS(self.sysDecAp)
+		self.sysDecAp.aM(self.mdDecApUNK)
+		self.sysDecAp.aM(self.mdDecApAbi)
+		self.sysDecAp.aM(self.mdDecApMedio)
+		self.sysDecAp.aM(self.mdDecApCerr)
+		self.mdMisionNormal.aSM(self.mdP00)
+		self.mdMisionNormal.aSM(self.mdP01)
+		self.mdMisionNormal.aSM(self.mdP02)
+		self.mdMisionNormal.aSM(self.mdP03)
+		self.mdMisionNormal.aSM(self.mdP04)
+		self.mdMisionNormal.aSM(self.mdP05)
+		self.mdMisionNormal.aSM(self.mdP06)
+		self.mdMisionNormal.aSM(self.mdP07)
+		self.mdMisionNormal.aSM(self.mdP08)
+		self.mdP00.aSM(self.mdNNB00)
+		self.mdP00.aSM(self.mdBBB00)
+		self.mdP00.aSM(self.mdBNB00)
+		self.mdP00.aSM(self.mdNNN00)
+		self.mdP00.aSM(self.mdBNN00)
+		self.mdP00.aSM(self.mdBBN00)
+		self.mdP00.aSM(self.mdNBB00)
+		self.mdP00.aSM(self.mdNBN00)
+		self.mdP01.aSM(self.mdNNB01)
+		self.mdP01.aSM(self.mdBBB01)
+		self.mdP01.aSM(self.mdBNB01)
+		self.mdP01.aSM(self.mdNNN01)
+		self.mdP01.aSM(self.mdBNN01)
+		self.mdP01.aSM(self.mdBBN01)
+		self.mdP01.aSM(self.mdNBB01)
+		self.mdP01.aSM(self.mdNBN01)
+		self.mdP01.aSM(self.mdVBN01)
+		self.mdP01.aSM(self.mdNBV01)
+		self.mdP02.aSM(self.mdNNB02)
+		self.mdP02.aSM(self.mdBBB02)
+		self.mdP02.aSM(self.mdBNB02)
+		self.mdP02.aSM(self.mdNNN02)
+		self.mdP02.aSM(self.mdBNN02)
+		self.mdP02.aSM(self.mdBBN02)
+		self.mdP02.aSM(self.mdNBB02)
+		self.mdP02.aSM(self.mdNBN02)
+		self.mdP02.aSM(self.mdNBV02)
+		self.mdP02.aSM(self.mdVBN02)
+		self.mdP03.aSM(self.mdBNN03)
+		self.mdP03.aSM(self.mdBBB03)
+		self.mdP03.aSM(self.mdBNB03)
+		self.mdP03.aSM(self.mdNNN03)
+		self.mdP03.aSM(self.mdNNB03)
+		self.mdP03.aSM(self.mdBBN03)
+		self.mdP03.aSM(self.mdNBB03)
+		self.mdP03.aSM(self.mdNBN03)
+		self.mdP03.aSM(self.mdNBV03)
+		self.mdP03.aSM(self.mdVBN03)
+		self.mdP04.aSM(self.mdBNN04)
+		self.mdP04.aSM(self.mdBBB04)
+		self.mdP04.aSM(self.mdBNB04)
+		self.mdP04.aSM(self.mdNNN04)
+		self.mdP04.aSM(self.mdNNB04)
+		self.mdP04.aSM(self.mdBBN04)
+		self.mdP04.aSM(self.mdNBB04)
+		self.mdP04.aSM(self.mdNBN04)
+		self.mdP04.aSM(self.mdNBV04)
+		self.mdP04.aSM(self.mdVBN04)
+		self.mdP05.aSM(self.mdBNN05)
+		self.mdP05.aSM(self.mdBBB05)
+		self.mdP05.aSM(self.mdBNB05)
+		self.mdP05.aSM(self.mdNNN05)
+		self.mdP05.aSM(self.mdNNB05)
+		self.mdP05.aSM(self.mdBBN05)
+		self.mdP05.aSM(self.mdNBB05)
+		self.mdP05.aSM(self.mdNBN05)
+		self.mdP06.aSM(self.mdBNN06)
+		self.mdP06.aSM(self.mdBBB06)
+		self.mdP06.aSM(self.mdBNB06)
+		self.mdP06.aSM(self.mdNNN06)
+		self.mdP06.aSM(self.mdNNB06)
+		self.mdP06.aSM(self.mdBBN06)
+		self.mdP06.aSM(self.mdNBB06)
+		self.mdP06.aSM(self.mdNBN06)
+		self.mdP06.aSM(self.mdNBV06)
+		self.mdP07.aSM(self.mdBNN07)
+		self.mdP07.aSM(self.mdBBB07)
+		self.mdP07.aSM(self.mdBNB07)
+		self.mdP07.aSM(self.mdNNN07)
+		self.mdP07.aSM(self.mdNNB07)
+		self.mdP07.aSM(self.mdBBN07)
+		self.mdP07.aSM(self.mdNBB07)
+		self.mdP07.aSM(self.mdNBN07)
+		self.mdP07.aSM(self.mdVBN07)
+		self.mdP07.aSM(self.mdVVB07)
+		self.mdP07.aSM(self.mdVVV07)
+		self.mdP07.aSM(self.mdNBV07)
+		self.mdP08.aSM(self.mdVBN08)
+		self.mdP08.aSM(self.mdVVB08)
+		self.mdP08.aSM(self.mdVVV08)
+		self.mdBNN00.aSM(self.mdCompDer)
+		self.mdNBB00.aSM(self.mdCompIzq)
+		self.mdBBB00.aSM(self.mdDecMvFw)
+		self.mdNNB00.aSM(self.mdCompIzq)
+		self.mdBNB00.aSM(self.mdDecMvFw)
+		self.mdNBN00.aSM(self.mdDecMvFw)
+		self.mdBBN00.aSM(self.mdCompDer)
+		self.mdNNN00.aSM(self.mdDecMvFw)
+		self.mdNBV01.aSM(self.mdGirarIzq)
+		self.mdBNB01.aSM(self.mdDecMvFw)
+		self.mdBBB01.aSM(self.mdStp)
+		self.mdBNN01.aSM(self.mdGirarDer)
+		self.mdNBB01.aSM(self.mdCompIzq)
+		self.mdNNB01.aSM(self.mdCompIzq)
+		self.mdVBN01.aSM(self.mdGirarDer)
+		self.mdBBN01.aSM(self.mdCompDer)
+		self.mdNNN01.aSM(self.mdGirarDer)
+		self.mdNBN01.aSM(self.mdStp)
+		self.mdBBB02.aSM(self.mdStp)
+		self.mdBBN02.aSM(self.mdCompDer)
+		self.mdBNB02.aSM(self.mdDecMvFw)
+		self.mdBNN02.aSM(self.mdGirarDer)
+		self.mdNBB02.aSM(self.mdCompIzq)
+		self.mdNBN02.aSM(self.mdDecMvFw)
+		self.mdNBV02.aSM(self.mdGirarIzq)
+		self.mdNNB02.aSM(self.mdCompIzq)
+		self.mdNNN02.aSM(self.mdGirarDer)
+		self.mdVBN02.aSM(self.mdGirarDer)
+		self.mdBBB03.aSM(self.mdStp)
+		self.mdBBN03.aSM(self.mdCompDer)
+		self.mdBNB03.aSM(self.mdDecMvFw)
+		self.mdBNN03.aSM(self.mdCompDer)
+		self.mdNBB03.aSM(self.mdCompIzq)
+		self.mdNBN03.aSM(self.mdStp)
+		self.mdNBV03.aSM(self.mdGirarIzq)
+		self.mdNNB03.aSM(self.mdGirarIzq)
+		self.mdNNN03.aSM(self.mdGirarIzq)
+		self.mdVBN03.aSM(self.mdGirarDer)
+		self.mdBBB04.aSM(self.mdCompDer)
+		self.mdBBN04.aSM(self.mdCompDer)
+		self.mdBNB04.aSM(self.mdDecMvFw)
+		self.mdBNN04.aSM(self.mdCompDer)
+		self.mdNBB04.aSM(self.mdCompIzq)
+		self.mdNBN04.aSM(self.mdStp)
+		self.mdNBV04.aSM(self.mdGirarIzq)
+		self.mdNNB04.aSM(self.mdDecMvFw)
+		self.mdNNN04.aSM(self.mdCompDer)
+		self.mdVBN04.aSM(self.mdGirarDer)
+		self.mdBBB05.aSM(self.mdStp)
+		self.mdBBN05.aSM(self.mdCompDer)
+		self.mdBNB05.aSM(self.mdDecMvFw)
+		self.mdBNN05.aSM(self.mdCompDer)
+		self.mdNBB05.aSM(self.mdCompIzq)
+		self.mdNBN05.aSM(self.mdCompDer)
+		self.mdNNB05.aSM(self.mdDecMvFw)
+		self.mdNNN05.aSM(self.mdCompDer)
+		self.mdVBN06.aSM(self.mdGirarDer)
+		self.mdNBB06.aSM(self.mdCompIzq)
+		self.mdBNB06.aSM(self.mdDecMvFw)
+		self.mdNBN06.aSM(self.mdStp)
+		self.mdNNN06.aSM(self.mdGirarDer)
+		self.mdBNN06.aSM(self.mdCompDer)
+		self.mdBBN06.aSM(self.mdCompDer)
+		self.mdBBB06.aSM(self.mdStp)
+		self.mdNBV06.aSM(self.mdGirarIzq)
+		self.mdNNB06.aSM(self.mdGirarDer)
+		self.mdBBB07.aSM(self.mdGirarDer)
+		self.mdBBN07.aSM(self.mdGirarDer)
+		self.mdBNB07.aSM(self.mdGirarIzq)
+		self.mdBNN07.aSM(self.mdGirarIzq)
+		self.mdNBB07.aSM(self.mdGirarDer)
+		self.mdNBN07.aSM(self.mdGirarDer)
+		self.mdNBV07.aSM(self.mdStp)
+		self.mdNNB07.aSM(self.mdGirarDer)
+		self.mdNNN07.aSM(self.mdGirarDer)
+		self.mdVBN07.aSM(self.mdCompIzq)
+		self.mdVVB07.aSM(self.mdDecMvFw)
+		self.mdVVV07.aSM(self.mdGirarDer)
+		self.mdVVV08.aSM(self.mdGirarDer)
+		self.mdVBN08.aSM(self.mdCompIzq)
+		self.mdVVB08.aSM(self.mdDecMvFw)
+		self.mdDecMvFw.aSM(self.mdRdDerFw)
+		self.mdCompIzq.aSM(self.mdRdDerFw)
+		self.mdCompDer.aSM(self.mdRdDerStp)
+		self.mdGirarDer.aSM(self.mdRdDerBw)
+		self.mdGirarIzq.aSM(self.mdRdDerFw)
+		self.mdStp.aSM(self.mdRdDerStp)
+		self.mdRdDerStp.aV(self.vlRdDer_Stp)
+		self.mdRdDerFw.aV(self.vlRdDer_Fw)
+		self.mdRdDerBw.aV(self.vlRdDer_Bw)
+		self.mdDecMvFw.aSM(self.mdRdIzqFw)
+		self.mdCompIzq.aSM(self.mdRdIzqStp)
+		self.mdCompDer.aSM(self.mdRdIzqFw)
+		self.mdGirarDer.aSM(self.mdRdIzqFw)
+		self.mdGirarIzq.aSM(self.mdRdIzqBw)
+		self.mdStp.aSM(self.mdRdIzqStp)
+		self.mdRdIzqStp.aV(self.vlRdIzq_Stp)
+		self.mdRdIzqFw.aV(self.vlRdIzq_Fw)
+		self.mdRdIzqBw.aV(self.vlRdIzq_Bw)
+		self.mdBNB00.aSM(self.mdNextSi)
+		self.mdBNN01.aSM(self.mdNextSi)
+		self.mdNNN01.aSM(self.mdNextSi)
+		self.mdBNN02.aSM(self.mdNextSi)
+		self.mdNNN02.aSM(self.mdNextSi)
+		self.mdNNB03.aSM(self.mdNextSi)
+		self.mdNNN03.aSM(self.mdNextSi)
+		self.mdNNB04.aSM(self.mdNextSi)
+		self.mdNNN04.aSM(self.mdNextSi)
+		self.mdBNB05.aSM(self.mdNextSi)
+		self.mdNNN06.aSM(self.mdNextSi)
+		self.mdNNB06.aSM(self.mdNextSi)
+		self.mdVVB07.aSM(self.mdNextSi)
+		self.mdVVV08.aSM(self.mdNextSi)
+		self.mdBNB01.aSM(self.mdDecSegBNB)
+		self.mdBNB02.aSM(self.mdDecSegBNB)
+		self.mdBNB03.aSM(self.mdDecSegBNB)
+		self.mdBNB04.aSM(self.mdDecSegBNB)
+		self.mdBNB05.aSM(self.mdDecSegBNB)
+		self.mdBNB06.aSM(self.mdDecSegBNB)
+		self.mdVVB07.aSM(self.mdDecSegVVB)
+		self.mdVVB08.aSM(self.mdDecSegVVB)
+		self.mdP00.aSM(self.mdDecApCerr)
+		self.mdP01.aSM(self.mdDecApCerr)
+		self.mdP02.aSM(self.mdDecApAbi)
+		self.mdP03.aSM(self.mdDecApAbi)
+		self.mdP04.aSM(self.mdDecApAbi)
+		self.mdP05.aSM(self.mdDecApAbi)
+		self.mdP06.aSM(self.mdDecApAbi)
+		self.mdP07.aSM(self.mdDecApAbi)
+		self.mdP08.aSM(self.mdDecApAbi)
+
+'''
 motorIzq = Motor('A')
 motorDer = Motor('B')
 
@@ -1828,18 +689,18 @@ def ruedas():
     global model
     global motorIzq,motorDer
 
-    if model.prRuedaIzq.selectedValue == model.vlRuedaIzq_Adelante:
+    if model.prRdIzq.selV == model.vlRdIzq_Fw:
         motorIzq.start(100)
     else:
-        if model.prRuedaIzq.selectedValue == model.vlRuedaIzq_Atras:
+        if model.prRdIzq.selV == model.vlRdIzq_Bw:
             motorIzq.start(-100)
         else:
             motorIzq.stop()    
 
-    if model.prRuedaDer.selectedValue == model.vlRuedaDer_Adelante:
+    if model.prRdDer.selV == model.vlRdDer_Fw:
         motorDer.start(100)
     else:
-        if model.prRuedaDer.selectedValue == model.vlRuedaDer_Atras:
+        if model.prRdDer.selV == model.vlRdDer_Bw:
             motorDer.start(-100)
         else:
             motorDer.stop()
@@ -1847,8 +708,8 @@ def ruedas():
 def para_todo():
     motorIzq.stop()
     motorDer.stop()
-
-model = csysWROPORIS()
+'''
+model = csysWROPR()
 
 
 
@@ -1856,27 +717,29 @@ model = csysWROPORIS()
 print("Nombre de modelo:",model.root.name)
 
 # Seleccionamos el modo de misión Normal
-model.root.setMode(model.mdMisionMode_Normal)
-print("\n\n\nModo actual de la misión:",model.root.selectedMode.name)
+model.root.sM(model.mdMisionNormal)
+print("\n\n\nModo actual de la misión:",model.root.selM.name)
 
 fin = False
 
 # Iteramos por todos los tramos
-for t in model.root.selectedMode.submodes:
-    model.sysTramo.setMode(t)
-    print("\n\n\nTramo actual:",t.name)
+for t in model.root.selM.submodes:
+    tr = model.root.selM.submodes[t]
+    model.sysTr.sM(tr)
+    print("\n\n\nTramo actual:",t)
     # Iteramos todas las situaciones posibles del tramo
-    for d in t.submodes:
-        model.sysSituacion.setMode(d)
-        print("Situación actual:",model.sysSituacion.selectedMode.name)
-        print("Decisión actual movilidad:",model.sysDecisionMovimiento.selectedMode.name)
-        print("Decisión actual aparejo:",model.sysDecisionAparejo.selectedMode.name)
-        print("Decisión actual siguiente paso:",model.sysNuevoPaso.selectedMode.name)
-        print("Ruedas: ",model.prRuedaDer.selectedValue.name,model.prRuedaIzq.selectedValue.name)
-        ruedas()
+    for d in tr.submodes:
+        dr = tr.submodes[d]
+        model.sysSit.sM(dr)
+        print("Situación actual:",model.sysSit.selM.name)
+        print("Decisión actual movilidad:",model.sysDecMov.selM.name)
+        print("Decisión actual aparejo:",model.sysDecAp.selM.name)
+        print("Decisión actual siguiente paso:",model.sysNext.selM.name)
+        print("Ruedas: ",model.prRdDer.selV.name,model.prRdIzq.selV.name)
+        #ruedas()
 
 hub = PrimeHub()
 
 hub.light_matrix.show_image('HAPPY')
 
-para_todo()
+#para_todo()
